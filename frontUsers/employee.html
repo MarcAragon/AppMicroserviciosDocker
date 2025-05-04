@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/imgs/logo.png">
+    <title>Employes</title>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            font-family: system-ui, sans-serif;
+            overflow: hidden;
+        }
+
+        .navBarContainer {
+            position: relative;
+            display: flex;
+            background-color: white;
+            border: 2px solid #d5c6ff;
+            height: 8vh; 
+            width: 100%;
+            border-radius: 0 0 20px 20px;
+            padding: 1vh 2vw;
+            box-sizing: border-box;
+            border-top: none;
+        }
+
+        button {
+            font-size: 1rem;
+            border-radius: 10px;
+            border: none;
+            height: 5vh;
+            width: 20vw;
+            min-width: 100px; 
+            cursor: pointer;
+            background-color: #b3a1e4;
+            color: white;
+        }
+
+        #btnLogOut {
+            margin-left: auto;
+            width: 20vh;
+        }
+
+        #windowQsOverlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.5); 
+            backdrop-filter: blur(8px); 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #windowQs {
+            box-shadow: 0px 0px 10px 2px #d5c6ff;
+            background-color: white;
+            border-radius: 25px;
+            width: 30vw; 
+            height: 30vh;
+            align-items: center;
+            text-align: center;
+            align-content: center;
+        }
+
+        #message {
+            position: absolute;
+            top: 0%;
+        }
+
+        #closeSesionNo, #closeSesionSi {
+            width: 20vh;
+            margin: 10px;
+        }
+
+        @media (max-width: 768px) {
+            #windowQs { width: 60vw; height: 40vh; }
+            button { width: 40vw; }
+        }
+
+        @media (max-width: 480px) {
+            #windowQs { width: 80vw; height: 50vh; }
+            button { width: 60vw; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navBarContainer">
+        <ul class="navList"></ul>
+        <button id="btnLogOut">Log out</button>
+        <p id="message"></p>
+    </nav>
+
+    <div id="windowQsOverlay">
+        <div id="windowQs">
+            <p>¿Quieres cerrar tu sesión?</p>
+            <button id="closeSesionSi">Si</button>
+            <button id="closeSesionNo">No</button>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('btnLogOut').addEventListener('click', () => {
+            document.getElementById('windowQsOverlay').style.display = 'flex';
+        });
+
+        document.getElementById('closeSesionNo').addEventListener('click', () => {
+            document.getElementById('windowQsOverlay').style.display = 'none';
+        });
+
+        window.addEventListener('load', () => {
+            document.getElementById('windowQsOverlay').style.display = 'none';
+            const userInfo = JSON.parse(sessionStorage.getItem('userInfo'))
+
+            if (!userInfo || userInfo.role !== 'employee') {
+                alert('Acceso denegaod. Redirigiendo al login...');
+                window.location.href = 'login.html';
+            } else {
+                document.getElementById('message').textContent = `Bienvenid@ ${userInfo.name}`;
+            }
+        });
+
+        document.getElementById('closeSesionSi').addEventListener('click', () => {
+            sessionStorage.clear();
+            window.location.href = 'login.html';
+        });
+    </script>
+
+    <div id="task-chart-container" style="font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; display: flex; justify-content: center; align-items: center;  margin: 0; padding: 20px; background-color: #f8f9fa;">
+        <div id="task-chart-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); width: 90%; max-width: 600px;">
+            <canvas id="task-chart-canvas" style="display: block; width: 100%; height: auto;"></canvas>
+        </div>
+    </div>
+
+    <div id="rating-card-container" style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px;">
+        <!-- Tarjeta con estilos específicos -->
+        <div id="rating-card" style="width: 220px; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); background: white;">
+            <!-- Label con estilos específicos -->
+            <div id="rating-label" style="font-size: 14px; color: #666; margin-bottom: 5px;">Calificación promedio</div>
+            <!-- Valor dinámico con estilos base -->
+            <div id="rating-value" style="font-size: 28px; font-weight: 600; color: #2b5876;">Cargando...</div>
+        </div>
+    </div>
+
+    <div id="tabla-container">
+        <style>
+          #tabla-container {
+            font-family: Arial, sans-serif;
+            max-width: 100%;
+            margin: 0;
+            padding: 0;
+          }
+          #mi-tabla {
+            width: 100%;
+            border-collapse: collapse;
+          }
+          #mi-tabla th, #mi-tabla td {
+            padding: 8px 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+          }
+          #mi-tabla th {
+            background-color: #f5f5f5;
+            font-weight: 600;
+          }
+          #mi-tabla tr:hover {
+            background-color: #f9f9f9;
+          }
+        </style>
+      
+        <table id="mi-tabla">
+          <thead>
+            <tr>
+              <th>Fecha asignación</th>
+              <th>Fecha entrega maxima</th>
+              <th>Fecha de entrega</th>
+              <th>Calidad</th>
+              <th>Iniciativa</th>
+              <th>Comunicación</th>
+              <th>Satisfacción de cliente</th>
+              <th>Calificación promedio</th>
+              <th>Estado</th>
+              <th>ID proyecto</th>
+            </tr>
+          </thead>
+          <tbody id="tabla-body">
+            <!-- Las filas se llenarán con JavaScript -->
+          </tbody>
+        </table>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        // Mover las variables globales aquí
+        let API_URL;
+        let taskChart;
+        let userInfo;
+
+        function formatearNumero(numero) {
+            return numero.toLocaleString('en-US', {
+                style: 'decimal',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 2,
+                useGrouping: true
+            });
+        }
+    
+        document.getElementById('btnLogOut').addEventListener('click', () => {
+            document.getElementById('windowQsOverlay').style.display = 'flex';
+        });
+    
+        document.getElementById('closeSesionNo').addEventListener('click', () => {
+            document.getElementById('windowQsOverlay').style.display = 'none';
+        });
+    
+        window.addEventListener('load', () => {
+            document.getElementById('windowQsOverlay').style.display = 'none';
+            const userInfo = JSON.parse(sessionStorage.getItem('userInfo'))
+            console.log(userInfo.id)
+    
+            if (!userInfo || userInfo.role !== 'employee') {
+                alert('Acceso denegado. Redirigiendo al login...');
+                window.location.href = 'login.html';
+            } else {
+                document.getElementById('message').textContent = `Bienvenid@ ${userInfo.name}`;
+                // Definir API_URL aquí donde userInfo está disponible
+                API_URL = `http:/localhost:8003/assignedEmp/${userInfo.id}`;
+                // Cargar los datos después de definir la URL
+                loadTaskData();
+                fetchRatingData();
+                llenarTabla();
+            }
+        });
+    
+        document.getElementById('closeSesionSi').addEventListener('click', () => {
+            sessionStorage.clear();
+            window.location.href = 'login.html';
+        });
+    
+        // Configuración para alta resolución
+        function setupCanvas(canvas) {
+            const dpr = window.devicePixelRatio || 1;
+            const rect = canvas.getBoundingClientRect();
+            
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            
+            const ctx = canvas.getContext('2d');
+            ctx.scale(dpr, dpr);
+            
+            return ctx;
+        }
+    
+        // Resto de tu código (colorPalette, loadTaskData, renderTaskChart) permanece igual
+        const colorPalette = {
+            asignado: 'rgba(100, 149, 237, 0.8)',
+            entregado: 'rgba(65, 105, 225, 0.8)',
+            tardio: 'rgba(30, 144, 255, 0.8)',
+            border: 'rgba(25, 25, 112, 0.8)'
+        };
+    
+        async function loadTaskData() {
+            try {
+                if (!API_URL) return; // Asegurarse que API_URL está definida
+                
+                const response = await fetch(API_URL);
+                const data = await response.json();
+        
+                let Asignado = 0, Entregado = 0, Tardio = 0;
+        
+                data.forEach(entrada => {
+                    if (entrada.estado === 'Asignado') Asignado++;
+                    if (entrada.estado === 'Entregado') Entregado++;
+                    if (entrada.estado === 'Tardio') Tardio++;
+                });
+                
+                renderTaskChart(Asignado, Entregado, Tardio);
+                
+            } catch (error) {
+                console.error('Error al obtener datos:', error);
+                renderTaskChart(0, 0, 0);
+            }
+        }
+
+        async function fetchRatingData() {
+            const valorElement = document.getElementById('rating-value');
+            const styles = {
+                loading: 'font-size: 28px; font-weight: 600; color: #999; font-style: italic;',
+                error: 'font-size: 28px; font-weight: 600; color: #e74c3c;',
+                normal: 'font-size: 28px; font-weight: 600; color: #2b5876;'
+            };
+
+            try {
+                valorElement.setAttribute('style', styles.loading);
+                valorElement.textContent = 'Cargando...';
+                
+                const response = await fetch(API_URL);
+                
+                if (!response.ok) {
+                    throw new Error(`Error HTTP: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                let sum = 0;
+                let count = 0;
+
+                data.forEach(entrada => {
+                    if (entrada.calificacion_promedio) {
+                        sum += entrada.calificacion_promedio;
+                        count++;
+                    }
+                });
+
+                const valor = count > 0 ? sum/count : 0;
+                const valorFormateado = formatearNumero(valor);
+                
+                valorElement.setAttribute('style', styles.normal);
+                valorElement.textContent = valorFormateado;
+                
+            } catch (error) {
+                console.error('Error al obtener datos:', error);
+                valorElement.setAttribute('style', styles.error);
+                valorElement.textContent = 'Error al cargar';
+            }
+        }
+    
+        function renderTaskChart(asignado, entregado, tardio) {
+            const canvas = document.getElementById('task-chart-canvas');
+            const ctx = setupCanvas(canvas);
+            
+            if (taskChart) {
+                taskChart.destroy();
+            }
+    
+            taskChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Asignado', 'Entregado', 'Tardío'],
+                    datasets: [{
+                        label: 'Cantidad de Tareas',
+                        data: [asignado, entregado, tardio],
+                        backgroundColor: [
+                            colorPalette.asignado,
+                            colorPalette.entregado,
+                            colorPalette.tardio
+                        ],
+                        borderColor: [
+                            colorPalette.border,
+                            colorPalette.border,
+                            colorPalette.border
+                        ],
+                        borderWidth: 1,
+                        borderRadius: 4,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    devicePixelRatio: 2,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                font: {
+                                    size: 12
+                                },
+                                padding: 10
+                            }
+                        },
+                        tooltip: {
+                            bodyFont: {
+                                size: 12
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0,
+                                font: {
+                                    size: 11
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(0,0,0,0.05)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                font: {
+                                    size: 11
+                                }
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 800
+                    }
+                }
+            });
+        }
+    
+        // Manejar redimensionamiento
+        window.addEventListener('resize', function() {
+            if (taskChart) {
+                const canvas = document.getElementById('task-chart-canvas');
+                setupCanvas(canvas);
+                taskChart.resize();
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', loadTaskData);
+  
+      // Función para llenar la tabla
+      async function llenarTabla() {
+        const response = await fetch(API_URL);
+        const jsonData = await response.json();
+        const tbody = document.getElementById('tabla-body');
+        tbody.innerHTML = '';
+        
+        // Ordenar por fecha (más reciente primero)
+        const datosOrdenados = [...jsonData].sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+        
+        // Limitar a 10 filas
+        const datosLimitados = datosOrdenados.slice(0, 10);
+        
+        // Llenar la tabla
+        datosLimitados.forEach(item => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${item.fecha_asignacion}</td>
+            <td>${item.fecha_entrega_maxima}</td>
+            <td>${item.fecha_entrega}</td>
+            <td>${item.calidad}</td>
+            <td>${item.iniciativa}</td>
+            <td>${item.comunicacion}</td>
+            <td>${item.satisfaccion_cliente}</td>
+            <td>${item.calificacion_promedio}</td>
+            <td>${item.estado}</td>
+            <td>${item.proyect_id}</td>
+          `;
+          tbody.appendChild(row);
+        });
+      }
+
+    </script>
+
+    
+</body>
+</html>

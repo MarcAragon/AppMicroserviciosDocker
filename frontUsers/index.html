@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/imgs/logo.png">
+    <title>Login</title>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            overflow: hidden;
+        }
+
+        .login-container {
+            display: flex;
+            align-items: center;
+            background-color: white;
+            height: 50vh;
+            width: 40vh;
+            box-shadow: 0px 0px 20px 1px #d5c6ff;
+            position: relative;
+            left: 100px;
+            top: 25%;
+            border-radius: 20px;
+            padding: 20px;
+            margin: 0;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center; 
+            width: 100%;   
+            margin: 0;  
+        }
+
+        input {
+            margin-bottom: 30px;
+            font-size: 15px;
+            border-radius: 10px;
+            border: none; 
+            height: 40px;
+            width: 80%;
+        }
+
+        input:focus {
+            border: none;
+            outline: 0;
+            box-shadow: 0px 0px 10px 2px #d5c6ff;
+        }
+
+        button {
+            font-size: 15px;
+            border-radius: 10px;
+            border: none;
+            height: 40px;
+            width: 200px;
+            cursor: pointer;
+            background-color: #b3a1e4;
+            color: white;
+        }
+
+        button:hover {
+            background-color: #6d4bcb;
+        }
+
+        .logo {
+            position: relative;
+            left: 55%;
+            bottom: 30%;
+            width: 60vh;
+            margin: 0px;
+        }
+
+        .Company-name {
+            position: absolute; 
+            top: 20%; 
+            left: 55%; 
+            color: #000000; 
+            font-size: 50px; 
+            text-align: center; 
+            margin: 0;
+            padding: 0;
+        }
+
+        #response {
+            position:absolute;
+            top: 75%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+    </style>
+</head>
+<body>
+    <h1 class="Company-name">NIMBUS Company</h1>
+    <div class="login-container">
+        <form id="loginForm">
+            <input type="text" id="id" placeholder="Enter ID" class="input-field" required>
+            <input type="text" id="user" placeholder="Enter Username" class="input-field" required>
+            <button type="submit" id="buttonLogIn">Log in</button>
+        </form>
+        <p id="response"></p>
+    </div>
+    <img src="/imgs/—Pngtree—illustration of a business programmer_19680627.png" alt="logo" class="logo">
+    <script>
+        document.getElementById("loginForm").addEventListener('submit', async function (event) {
+    event.preventDefault();
+
+    const id = document.getElementById('id').value;
+    const user = document.getElementById('user').value;
+
+    const responseElement = document.getElementById('response');
+    responseElement.textContent = '';
+
+    try {
+        const response = await fetch('http://localhost:8000/users/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id, user }),
+            mode: 'cors'
+        });
+
+        if (response.ok) {
+            const answer = await response.json();
+            responseElement.textContent = answer.message;
+            responseElement.color = 'black'
+
+            document.getElementById('id').value ='';
+            document.getElementById('user').value ='';
+
+            sessionStorage.setItem('userInfo', JSON.stringify(answer));
+
+            setTimeout(() => {
+                if (answer.role === 'boss') {
+                window.location.href = 'boss.html';
+                } else if (answer.role === 'employee') {
+                window.location.href = 'employee.html';
+                }
+            }, 3000)
+        } else {
+            const error = await response.text();
+            responseElement.textContent = error;
+            responseElement.style.color = 'red';
+	    console.log(error)
+        }
+    } catch (error) {
+        responseElement.textContent = 'Error connecting to server.';
+        responseElement.style.color = 'red';
+    }
+});
+
+    </script>
+</body>
+</html>

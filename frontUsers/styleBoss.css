@@ -1,0 +1,380 @@
+html, body { 
+    height: 100%; 
+    margin: 0; 
+    font-family: system-ui, sans-serif; 
+    overflow: hidden; 
+}
+
+.navBarContainer { 
+    display: flex; 
+    background-color: white; 
+    border: 2px solid #d5c6ff; 
+    height: 8vh; 
+    width: 100%; 
+    border-radius: 0 0 20px 20px; 
+    padding: 1vh 2vw; 
+    box-sizing: border-box; 
+    border-top: none; 
+}
+
+button { 
+    font-size: 1rem; 
+    border-radius: 10px; 
+    border: none; 
+    height: 5vh; 
+    width: 20vw; 
+    min-width: 100px; 
+    cursor: pointer; 
+    background-color: #b3a1e4; 
+    color: white; 
+    margin: 0 1vw; 
+    text-align: center;
+    align-items: center;
+}
+
+#task-chart-container {
+    background-color: rgba(255, 0, 0, 0.1); /* Fondo temporal para verificar visibilidad */
+}
+
+input {
+    font-size: 1rem; 
+    border-radius: 10px; 
+    border: none; 
+    height: 5vh; 
+    width: 15vw; 
+    min-width: 100px; 
+    cursor: pointer; 
+    border: 2px solid #b3a1e4;
+    color: rgb(0, 0, 0); 
+    margin: 0 1vw;   
+    align-items: center;
+}
+
+#btnLogOut { 
+    position: absolute; 
+    right: 0; 
+    width: 15vh; 
+}
+
+#btnConsultUsers { 
+    position: absolute; 
+    right: 17vh; 
+    width: 20vh; 
+}
+
+#usersTableContainer > button {
+    justify-content: center;
+    margin-left: 5vh;
+}
+
+#usersTableContainer {   
+    width: 55vw; 
+    max-height: 90%;
+    min-height: 10vh;
+    overflow-y: auto; 
+    display: flex;
+    flex-direction: row; 
+    align-items: center; 
+    padding: 2vh 2vw;
+    box-sizing: border-box;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 25px;
+    box-shadow: 0px 0px 10px 2px #d5c6ff;
+    justify-content: center;
+    background-color: white;  
+}
+
+#usersTable {
+    position: sticky;
+    display: none;
+    width: auto; 
+    border-collapse: collapse;
+    margin-top: 5vw; 
+    max-width: 80%;
+}
+
+#usersTable th, #usersTable td {
+    border: 1.5px solid #000;
+    padding: 8px 12px;
+    text-align: left;
+}
+
+#usersTable th {
+    background-color: #b3a1e4;
+    color: white;
+    position: sticky;
+    top: 0;
+}
+
+#closeI { 
+    position: absolute; 
+    top: 0vh; 
+    left: 2%; 
+    color: #3c0fb6; 
+    font-weight: 800; 
+    cursor: pointer; 
+    background-color: white;
+    padding: 0.5vh 0.5vw;
+    border-radius: 50%; 
+    box-shadow: 0 0 5px #d5c6ff; 
+}
+
+#closeJ { 
+    position: absolute; 
+    top: 0vh; 
+    left: 2%; 
+    color: #3c0fb6; 
+    font-weight: 800; 
+    cursor: pointer; 
+    background-color: white;
+    padding: 0.5vh 0.5vw;
+    border-radius: 50%; 
+    box-shadow: 0 0 5px #d5c6ff; 
+}
+
+#windowQsOverlay, #usersTableOverLay, #windowPutOverLay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5); 
+    backdrop-filter: blur(8px); 
+    align-items: center;
+    justify-content: center;
+}
+
+#windowQs, #containterPut {
+    box-shadow: 0px 0px 10px 2px #d5c6ff;
+    background-color: white;
+    border-radius: 25px;
+    width: 30vw; 
+    height: 30vh;
+    align-items: center;
+    text-align: center;
+    align-content: center;
+}
+
+#message {
+    position: absolute;
+    top: 1%;
+    color: #3c0fb6;
+}
+
+#closeSesionNo, #closeSesionSi {
+    width: 20vh;
+    margin: 10px;
+}
+
+#sendID {
+    display: none;
+    position: absolute;
+    width: 10vh;
+    top: 1.2vw;
+    left: 18vh;
+    margin: 0;
+}
+
+#inputGetById {
+    display: none;
+    position: fixed;
+    width: 5%;
+    top: 1vw;
+    left: 7%;
+    margin: 0;
+}
+
+.btnPut {
+    display: flex;
+    width: 2vh;
+    height: 1vw;
+}
+
+.btnPut:hover {
+    cursor: pointer;
+}
+
+.btnPut:active {
+    transform: scale(1.2);
+}
+
+#btnAddUser {
+    position: absolute;
+    width: 10%;
+    right: 20%;
+}
+
+#addUserOverlay {
+    display: none;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+    align-items: center;
+    justify-content: center;
+}
+
+#addUserContainer {
+    background-color: white;
+    border-radius: 25px;
+    padding: 20px;
+    box-shadow: 0px 0px 10px 2px #d5c6ff;
+    text-align: center;
+    width: 300px;
+}
+
+#addUserForm input {
+    display: block;
+    width: 90%;
+    margin: 10px auto;
+    padding: 8px;
+    border: 2px solid #b3a1e4;
+    border-radius: 10px;
+}
+
+#addUserForm button {
+    background-color: #b3a1e4;
+    position: flex;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    width: 40%;
+    left: 5%;
+}
+
+#formUpdateProjects {
+    display: none;
+}
+
+#btnProjects {
+    position: relative;
+    left: 57%;
+    width: 10vw;
+}
+
+#projectsTableContainer {
+    position: absolute;
+    right: 50%;
+}
+
+#addUserForm button:hover {
+    background-color: #957de0;
+}
+
+#searchProjectModal {
+    position: absolute;
+    left: 40%;
+    top: 30%;
+}
+
+#projectsOverlay {
+    display: none;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+    align-items: center;
+    justify-content: center;
+}
+
+#projectsContainer {
+    position: absolute;
+    top: 5%;
+}
+
+#container2Crear {
+    width: 18vw; 
+    max-height: 90%;
+    min-height: 50vh;
+    overflow-y: auto; 
+    display: flex;
+    flex-direction: row; 
+    align-items: center;
+    box-sizing: border-box;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, 20%);
+    border-radius: 25px;
+    box-shadow: 0px 0px 10px 2px #d5c6ff;
+    justify-content: center;
+    background-color: white;  
+}
+
+#projectsTableContainer {
+    display: block;
+    max-height: 70vh;
+    overflow-y: auto; 
+    width: 90%; 
+    margin: 0 auto; 
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, 15%);
+    border-radius: 5%;
+}
+
+#projectsTable {
+    width: 100%;
+    border-collapse: collapse; 
+    background-color:aliceblue;
+    margin: 0 auto;
+}
+
+#projectsTable th, #projectsTable td {
+    border: 1px solid black; /* Borde de 1px sólido y de color negro */
+    padding: 8px; /* Espaciado dentro de las celdas */
+    text-align: left; /* Alineación del texto a la izquierda */
+}
+
+#projectsTable th {
+    background-color: rgb(188, 217, 243); /* Fondo para los encabezados */
+}
+
+#projectForm button {
+    width: 15vw;
+}
+
+#searchProjectModal {
+    width: 25vw; 
+    max-height: 90%;
+    min-height: 65vh;
+    overflow-y: auto; 
+    display: flex;
+    flex-direction: row; 
+    align-items: center; 
+    padding: 2vh 2vw;
+    box-sizing: border-box;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, 20%);
+    border-radius: 25px;
+    box-shadow: 0px 0px 10px 2px #d5c6ff;
+    justify-content: center;
+    background-color: white;  
+}
+
+@media (max-width: 768px) {
+    #windowQs { width: 60vw; height: 40vh; }
+    button { width: 40vw; }
+}
+
+@media (max-width: 480px) {
+    #windowQs { width: 80vw; height: 50vh; }
+    button { width: 60vw; }
+}

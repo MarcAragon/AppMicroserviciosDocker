@@ -66,7 +66,7 @@ router.get('/assignedEmp/:id', async (req, res) => {
         }
         
     } catch (error) {
-        res.status(500).json({ error: 'Error al obtener las tareas asignada' });
+        res.status(500).json({ error: 'Error al obtener las tareas asignada', reason: error });
     }});
 
 router.put('/assignedT/:id', async (req, res) => {

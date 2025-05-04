@@ -52,7 +52,7 @@ router.get('/assignedEmp/:id', async (req, res) => {
     try {
 
         const id = req.params.id;
-        User = await axios.get(`http://localhost:8000/users/${id}`)
+        const User = await axios.get(`http://localhost:8000/users/${id}`)
 
         if (User.data) {
             

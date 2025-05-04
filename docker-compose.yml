@@ -26,7 +26,7 @@ services:
       - "8002:8002"
 
   tareasasignadas:
-    image: marchimself/tareasasigmicrsrv:v3
+    image: marchimself/tareasasigmcrsrv:v4
     depends_on:
       - db
       - usuarios

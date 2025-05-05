@@ -439,7 +439,7 @@ document.getElementById("btnProjects").addEventListener("click", () => {
 
         document.getElementById("btnGetProjects").addEventListener("click", async () => {
             try {
-                const res = await fetch("http://localhost/projects");
+                const res = await fetch("http://localhost:8001/projects");
                 if (!res.ok) throw new Error("Error al obtener proyectos.");
                 const data = await res.json();
 

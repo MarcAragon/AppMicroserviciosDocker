@@ -52,13 +52,13 @@ router.get('/assignedEmp/:id', async (req, res) => {
     try {
 
         const id = req.params.id;
-        const User = await axios.get(`http://localhost:8000/users/${id}`)
+        const User = await fetch(`http://usuarios:8000/users/${id}`)
 
-        if (User.data) {
+        if (User.json()) {
             
             const result = await tareasAsignadasModel.consultarTareasPorEmpleado(id);
             
-            if (!result) {
+            if (!result || result == []) {
             return res.status(404).json({ error: 'Error al traer el empleado o sus tareas' });
             }
             

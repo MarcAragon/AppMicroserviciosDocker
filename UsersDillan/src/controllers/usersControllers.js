@@ -100,7 +100,7 @@ router.post('/users/login', async (req, res) => {
         const result = await usersModel.login(id, user);
 
         if (result[0].length > 0) {
-            const { data: userData } = await axios.get(`http://localhost:8000/users/${id}`);
+            const { data: userData } = await axios.get(`http://usuarios:8000/users/${id}`);
             const { role, name } = userData;
         
             res.json({ 

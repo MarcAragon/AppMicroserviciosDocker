@@ -42,6 +42,7 @@ tareasAsignadas = spark.sql('SELECT id, empleado_id, task_id, fecha_asignacion, 
 tareasAsignadas.show()
 tareasAsignadas.coalesce(1).write.mode('overwrite').csv('/root/AppMicroserviciosDocker/resultados/tareasAsignadas', header='True')
 
-proyectos = spark.sql('SELECT project_id, project_name, boss_id, boss_name, status, team_members FROM data')
+proyectos = spark.sql('SELECT project_id, project_name, boss_id, boss_name, status, REPLACE(team_members, ",", ";") as team_members FROM data')
+proyectos.coalesce(1).write.mode('overwrite').csv('/content/resultados/proyectos', header='True')
 proyectos.show()
 proyectos.coalesce(1).write.mode('overwrite').csv('/root/AppMicroserviciosDocker/resultados/proyectos', header='True')

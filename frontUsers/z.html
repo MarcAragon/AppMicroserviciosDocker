@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gráficas de Tareas</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+
+        .chart-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            height: 40vh;
+            width: 40vw;
+            padding: 0px;
+            position: relative;
+            top: -25vh;
+            left: -1vw;
+            margin: 10px;
+        }
+
+        .chart-container2 {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            width: 20vw;
+            height: 20vh;
+            padding: 0px;
+            position: relative;
+            left: -42vw;
+            top: 5vh;
+            margin: 10px;
+        }
+
+        #tareasChart {
+            width: 100%;
+            height: 100%; 
+        }
+
+        #tareasEstadoChart {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="chart-container">
+        <canvas id="tareasChart"></canvas>
+    </div>
+    <div class="chart-container2">
+        <canvas id="tareasEstadoChart"></canvas>
+    </div>
+
+    <script>
+        // Función para obtener datos desde la API
+        async function obtenerDatos() {
+            try {
+                console.log('Intentando obtener datos de la API...');
+                const response = await fetch('http://localhost:8004/analisis-tareas');
+                if (!response.ok) {
+                    throw new Error(`Error en la solicitud: ${response.status} ${response.statusText}`);
+                }
+                const datosTareas = await response.json();
+                console.log('Datos recibidos:', datosTareas);
+                return datosTareas;
+            } catch (error) {
+                console.error('Error al obtener los datos de la API:', error);
+                alert('No se pudieron cargar los datos de la API: ' + error.message);
+                return null;
+            }
+        }
+
+        // Función para crear la gráfica de barras
+        function crearGraficaBarras(datosTareas) {
+            if (!datosTareas) return;
+
+            // Extraer nombres de los jefes y datos de tareas
+            const nombresJefes = datosTareas.map(item => item.boss_name);
+            const tareasCompletadas = datosTareas.map(item => item.empleados_tareas_completada);
+            const tareasCreadas = datosTareas.map(item => item.empleados_tareas_creadas);
+            const tareasEnProgreso = datosTareas.map(item => item.empleados_tareas_en_progreso);
+
+            // Configurar el contexto del canvas
+            const ctx = document.getElementById('tareasChart').getContext('2d');
+
+            // Crear la gráfica de barras
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: nombresJefes,
+                    datasets: [
+                        {
+                            label: 'Tareas Completadas',
+                            data: tareasCompletadas,
+                            backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Tareas Creadas',
+                            data: tareasCreadas,
+                            backgroundColor: 'rgba(255, 159, 64, 0.6)',
+                            borderColor: 'rgba(255, 159, 64, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Tareas en Progreso',
+                            data: tareasEnProgreso,
+                            backgroundColor: 'rgba(153, 102, 255, 0.6)',
+                            borderColor: 'rgba(153, 102, 255, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Tareas asignadas (Por estado)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Jefe encargado'
+                            },
+                            ticks: {
+                                autoSkip: false,
+                                maxRotation: 45,
+                                minRotation: 45
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        title: {
+                            display: true,
+                            text: 'Tareas asignadas por jefe según estado'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Función para crear la gráfica de anillo
+        function crearGraficaAnillo(datosTareas) {
+            if (!datosTareas) return;
+
+            // Calcular el total de tareas por estado
+            const totalCompletadas = datosTareas.reduce((sum, item) => sum + item.empleados_tareas_completada, 0);
+            const totalCreadas = datosTareas.reduce((sum, item) => sum + item.empleados_tareas_creadas, 0);
+            const totalEnProgreso = datosTareas.reduce((sum, item) => sum + item.empleados_tareas_en_progreso, 0);
+
+            // Etiquetas y datos para la gráfica
+            const etiquetas = ['Tareas Completadas', 'Tareas Creadas', 'Tareas en Progreso'];
+            const datos = [totalCompletadas, totalCreadas, totalEnProgreso];
+
+            // Colores para cada estado
+            const colores = [
+                'rgba(75, 192, 192, 0.6)', // Verde para completadas
+                'rgba(255, 159, 64, 0.6)', // Naranja para creadas
+                'rgba(153, 102, 255, 0.6)' // Morado para en progreso
+            ];
+            const coloresBorde = colores.map(color => color.replace('0.6', '1'));
+
+            // Configurar el contexto del canvas
+            const ctx = document.getElementById('tareasEstadoChart').getContext('2d');
+
+            // Crear la gráfica de anillo
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: etiquetas,
+                    datasets: [{
+                        label: 'Total de Tareas',
+                        data: datos,
+                        backgroundColor: colores,
+                        borderColor: coloresBorde,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'right',
+                            labels: {
+                                boxWidth: 20
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Tareas por estado',
+                            font: {
+                                size: 20
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw;
+                                    return `${label}: ${value} tareas`;
+                                }
+                            }
+                        }
+                    },
+                    cutout: '50%',
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        // Función principal para cargar los datos y crear ambas gráficas
+        async function inicializarGraficas() {
+            const datosTareas = await obtenerDatos();
+            if (datosTareas) {
+                crearGraficaBarras(datosTareas);
+                crearGraficaAnillo(datosTareas);
+            }
+        }
+
+        // Llamar a la función principal al cargar la página
+        window.onload = inicializarGraficas;
+    </script>
+</body>
+</html>

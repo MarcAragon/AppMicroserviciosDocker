@@ -9,6 +9,7 @@ app.use(morgan('dev'));
 app.use(express.json());
 app.use(usersControllers);
 require('dotenv').config();
+
 const PORT = 8000
 app.listen(PORT, () => {
     console.log(`Usuarios escuchando desde el puerto ${PORT}`);

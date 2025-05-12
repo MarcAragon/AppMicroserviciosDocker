@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="/imgs/logo.png">
-    <link rel="stylesheet" href="/styleBoss.css">
+    <link rel="stylesheet" href="styleBoss.css">
     <title>Boss</title>
 </head>
 <body>
@@ -13,6 +13,7 @@
         <button id="btnAddUser">Agregar Usuario</button>
         <button id="btnConsultUsers">Consultar Usuarios</button>
         <button id="btnLogOut">Cerrar sesión</button>
+        <button id="btnDashboard">Dashboard</button>
         <p id="message"></p>
     </nav>
 
@@ -260,6 +261,10 @@
             getUsersByRole('employee');
             clean(['closeI'], ['btnEmployees', 'btnBosses', 'closeJ', 'inputGetById', 'sendID', 'getByID']);
         });
+        
+        document.getElementById('btnDashboard').addEventListener('click', () => {
+            window.location.href = 'dashboard.html'
+        })
 
         document.getElementById('closeJ').addEventListener('click', () => {
             document.getElementById('usersTableContainer').style.display = 'none';

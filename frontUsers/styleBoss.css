@@ -62,6 +62,12 @@ input {
     width: 20vh; 
 }
 
+#btnDashboard {
+    position: absolute;
+    width: 5vh;
+    left: 49vw;
+}
+
 #usersTableContainer > button {
     justify-content: center;
     margin-left: 5vh;

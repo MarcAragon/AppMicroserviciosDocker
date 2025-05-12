@@ -153,3 +153,36 @@ USE userscompany;
 SELECT * FROM users;
 
 -- Dump completed on 2025-03-22 20:18:35
+
+CREATE DATABASE IF NOT EXISTS resultados_analisis;
+USE resultados_analisis;
+
+CREATE TABLE IF NOT EXISTS analisis_tareas (
+    boss_name TEXT NULL,
+    empleados_tareas_completada INT NULL,
+    empleados_tareas_creadas INT NULL,
+    empleados_tareas_en_progreso INT NULL
+);
+
+INSERT INTO analisis_tareas (boss_name, empleados_tareas_completada, empleados_tareas_creadas, empleados_tareas_en_progreso) 
+VALUES
+('Alyssa Lee', 729, 158, 52),
+('Roberto Robinson', 351, 117, 117),
+('Andrew Evans', 115, 69, 69),
+('Roger Martin', 228, 76, 190),
+('John Mckee', 36, 72, 54),
+('Wayne Stevens', 459, 153, 204),
+('Wayne Bell', 245, 175, 0),
+('Cynthia Logan', 252, 56, 140),
+('Courtney Sampson', 273, 156, 78),
+('Eric Kemp', 240, 90, 120),
+('Whitney Williams', 306, 34, 68),
+('Sydney Payne', 266, 76, 228),
+('Rebecca Pennington', 258, 129, 215),
+('David George', 612, 102, 204),
+('Leonard Ayala', 60, 60, 100),
+('Robert King', 266, 114, 152),
+('Lindsey Hall', 40, 40, 100),
+('Daniel Marsh', 88, 66, 44),
+('Omar Howell', 192, 48, 72),
+('Kevin Roth', 34, 17, 85);

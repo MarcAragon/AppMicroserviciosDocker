@@ -186,3 +186,5 @@ VALUES
 ('Daniel Marsh', 88, 66, 44),
 ('Omar Howell', 192, 48, 72),
 ('Kevin Roth', 34, 17, 85);
+
+SELECT * FROM analisis_tareas;

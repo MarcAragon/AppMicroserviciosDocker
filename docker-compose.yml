@@ -1,6 +1,6 @@
 services:
   db:
-    image: marchimself/appdb:latest
+    image: steven462/db:latest
     ports: 
       - "3333:3306"
     healthcheck:
@@ -42,7 +42,14 @@ services:
     ports:
       - "8000:8000"
 
+  resultados:
+    image: steven462/resultados:latest
+    depends_on:
+      - db
+    ports:
+      - "8004:8004"
+
   web:
-    image: marchimself/tallerdockerfront:latest
+    image: steven462/front:latest
     ports:
       - "8080:80"

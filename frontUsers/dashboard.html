@@ -17,6 +17,48 @@
             padding: 20px;
         }
 
+        button {
+            font-size: 1rem; 
+            border-radius: 10px; 
+            border: none; 
+            height: 5vh; 
+            width: 5vw; 
+            min-width: 100px; 
+            cursor: pointer; 
+            background-color: #b3a1e4; 
+            color: white; 
+            margin: 0 1vw; 
+            text-align: center;
+            align-items: center;
+        }
+
+        .navBarContainer { 
+            display: flex; 
+            background-color: white; 
+            border: 2px solid #d5c6ff; 
+            height: 8vh; 
+            width: 100%; 
+            border-radius: 0 0 20px 20px; 
+            padding: 1vh 2vw; 
+            box-sizing: border-box; 
+            border-top: none; 
+            position: absolute;
+            top: 0%;
+            left: 0%;
+        }
+
+        #message {
+            position: absolute;
+            top: 1.5vh;
+            color: #3c0fb6;
+        }
+
+        #goBackBoos {
+            position: absolute;
+            top: 1.5vh;
+            right: 0vw;
+        }
+
         .chart-container {
             display: flex;
             justify-content: center;
@@ -55,6 +97,11 @@
     </style>
 </head>
 <body>
+    <nav class="navBarContainer">
+        <button id="goBackBoos">Go back</button>
+        <p id="message">Hello Boos</p>
+    </nav>
+
     <div class="chart-container">
         <canvas id="tareasChart"></canvas>
     </div>
@@ -63,6 +110,10 @@
     </div>
 
     <script>
+        document.getElementById('goBackBoos').addEventListener('click', () => {
+            window.location.href = 'boss.html';
+        })
+
         // Función para obtener datos desde la API
         async function obtenerDatos() {
             try {

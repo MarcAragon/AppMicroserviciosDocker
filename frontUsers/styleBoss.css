@@ -64,8 +64,8 @@ input {
 
 #btnDashboard {
     position: absolute;
-    width: 5vw;
-    left: 50vw;
+    width: 5vh;
+    left: 49vw;
 }
 
 #usersTableContainer > button {

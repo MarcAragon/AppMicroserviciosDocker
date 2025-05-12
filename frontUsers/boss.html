@@ -261,6 +261,10 @@
             getUsersByRole('employee');
             clean(['closeI'], ['btnEmployees', 'btnBosses', 'closeJ', 'inputGetById', 'sendID', 'getByID']);
         });
+        
+        document.getElementById('btnDashboard').addEventListener('click', () => {
+            window.location.href = 'dashboard.html'
+        })
 
         document.getElementById('closeJ').addEventListener('click', () => {
             document.getElementById('usersTableContainer').style.display = 'none';

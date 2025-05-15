@@ -188,3 +188,159 @@ VALUES
 ('Kevin Roth', 34, 17, 85);
 
 SELECT * FROM analisis_tareas;
+
+
+-- 1. Tabla de rendimiento por empleado
+DROP TABLE IF EXISTS rendimiento_empleados;
+CREATE TABLE rendimiento_empleados (
+    empleado_id INT PRIMARY KEY,
+    tareas_completadas INT NOT NULL DEFAULT 0,
+    tareas_tardias INT NOT NULL DEFAULT 0,
+    tareas_asignadas INT NOT NULL DEFAULT 0,
+    total_tareas INT NOT NULL DEFAULT 0,
+    calificacion_promedio DECIMAL(5,2),
+    porcentaje_completadas DECIMAL(5,2),
+    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- 2. Tabla de calidad por empleado
+DROP TABLE IF EXISTS calidad_empleados;
+CREATE TABLE calidad_empleados (
+    empleado_id INT PRIMARY KEY,
+    calidad_promedio DECIMAL(5,2),
+    iniciativa_promedio DECIMAL(5,2),
+    comunicacion_promedio DECIMAL(5,2),
+    satisfaccion_cliente_promedio DECIMAL(5,2),
+    calificacion_general_promedio DECIMAL(5,2),
+    tareas_evaluadas INT NOT NULL DEFAULT 0,
+    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- 3. Tabla de cumplimiento de plazos
+DROP TABLE IF EXISTS cumplimiento_plazos;
+CREATE TABLE cumplimiento_plazos (
+    empleado_id INT PRIMARY KEY,
+    a_tiempo INT DEFAULT 0,
+    tarde INT DEFAULT 0,
+    muy_tarde INT DEFAULT 0,
+    vencido INT DEFAULT 0,
+    en_progreso INT DEFAULT 0,
+    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- 4. Tabla de carga de trabajo
+DROP TABLE IF EXISTS carga_trabajo;
+CREATE TABLE carga_trabajo (
+    empleado_id INT PRIMARY KEY,
+    total_tareas INT NOT NULL DEFAULT 0,
+    tareas_pendientes INT DEFAULT 0,
+    tareas_completadas INT DEFAULT 0,
+    tareas_tardias INT DEFAULT 0,
+    dias_promedio_asignacion DECIMAL(7,2),
+    primera_asignacion DATETIME,
+    ultima_asignacion DATETIME,
+    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- 5. Tabla de patrones temporales
+DROP TABLE IF EXISTS patron_temporal;
+CREATE TABLE patron_temporal (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    empleado_id INT NOT NULL,
+    año INT,
+    mes INT,
+    dia_semana INT,
+    cantidad_tareas INT DEFAULT 0,
+    calificacion_promedio DECIMAL(5,2),
+    calidad_promedio DECIMAL(5,2),
+    satisfaccion_promedio DECIMAL(5,2),
+    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_empleado_tiempo (empleado_id, año, mes, dia_semana)
+);
+
+-- 6. Tabla de análisis de retrasos
+DROP TABLE IF EXISTS analisis_retrasos;
+CREATE TABLE analisis_retrasos (
+    empleado_id INT PRIMARY KEY,
+    total_tareas_con_retraso INT DEFAULT 0,
+    dias_promedio_retraso DECIMAL(7,2),
+    max_dias_retraso INT,
+    min_dias_retraso INT,
+    desviacion_retraso DECIMAL(7,2),
+    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- 7. Tabla de distribución de estados
+DROP TABLE IF EXISTS distribucion_estados;
+CREATE TABLE distribucion_estados (
+    empleado_id INT PRIMARY KEY,
+    estado_asignado INT DEFAULT 0,
+    estado_entregado INT DEFAULT 0,
+    estado_tardio INT DEFAULT 0,
+    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- 8. Tabla de métricas de evaluación
+DROP TABLE IF EXISTS metricas_evaluacion;
+CREATE TABLE metricas_evaluacion (
+    empleado_id INT PRIMARY KEY,
+    tareas_evaluadas INT DEFAULT 0,
+    calidad_promedio DECIMAL(5,2),
+    calidad_minima INT,
+    calidad_maxima INT,
+    iniciativa_promedio DECIMAL(5,2),
+    iniciativa_minima INT,
+    iniciativa_maxima INT,
+    comunicacion_promedio DECIMAL(5,2),
+    comunicacion_minima INT,
+    comunicacion_maxima INT,
+    satisfaccion_promedio DECIMAL(5,2),
+    satisfaccion_minima INT,
+    satisfaccion_maxima INT,
+    calificacion_general DECIMAL(5,2),
+    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- 9. Tabla de resumen consolidado
+DROP TABLE IF EXISTS resumen_consolidado;
+CREATE TABLE resumen_consolidado (
+    empleado_id INT PRIMARY KEY,
+    total_tareas INT NOT NULL DEFAULT 0,
+    tareas_completadas INT DEFAULT 0,
+    tareas_tardias INT DEFAULT 0,
+    tareas_pendientes INT DEFAULT 0,
+    porcentaje_completado DECIMAL(5,2),
+    porcentaje_tardio DECIMAL(5,2),
+    calificacion_promedio DECIMAL(5,2),
+    calidad_promedio DECIMAL(5,2),
+    iniciativa_promedio DECIMAL(5,2),
+    comunicacion_promedio DECIMAL(5,2),
+    satisfaccion_promedio DECIMAL(5,2),
+    dias_promedio_para_entrega DECIMAL(7,2),
+    dias_promedio_retraso DECIMAL(7,2),
+    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- 10. Tabla de ranking de empleados
+DROP TABLE IF EXISTS ranking_empleados;
+CREATE TABLE ranking_empleados (
+    empleado_id INT PRIMARY KEY,
+    score_total DECIMAL(7,2),
+    calificacion DECIMAL(5,2),
+    porcentaje_completado DECIMAL(5,2),
+    porcentaje_a_tiempo DECIMAL(5,2),
+    ranking INT,
+    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- 11. Tabla de estadísticas generales
+DROP TABLE IF EXISTS estadisticas_generales;
+CREATE TABLE estadisticas_generales (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    total_empleados INT,
+    total_tareas_unicas INT,
+    total_asignaciones INT,
+    calificacion_promedio_global DECIMAL(5,2),
+    porcentaje_completado_global DECIMAL(5,2),
+    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);

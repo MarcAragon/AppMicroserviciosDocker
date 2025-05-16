@@ -157,42 +157,8 @@ SELECT * FROM users;
 CREATE DATABASE IF NOT EXISTS resultados_analisis;
 USE resultados_analisis;
 
-CREATE TABLE IF NOT EXISTS analisis_tareas (
-    boss_name TEXT NULL,
-    empleados_tareas_completada INT NULL,
-    empleados_tareas_creadas INT NULL,
-    empleados_tareas_en_progreso INT NULL
-);
-
-INSERT INTO analisis_tareas (boss_name, empleados_tareas_completada, empleados_tareas_creadas, empleados_tareas_en_progreso) 
-VALUES
-('Alyssa Lee', 729, 158, 52),
-('Roberto Robinson', 351, 117, 117),
-('Andrew Evans', 115, 69, 69),
-('Roger Martin', 228, 76, 190),
-('John Mckee', 36, 72, 54),
-('Wayne Stevens', 459, 153, 204),
-('Wayne Bell', 245, 175, 0),
-('Cynthia Logan', 252, 56, 140),
-('Courtney Sampson', 273, 156, 78),
-('Eric Kemp', 240, 90, 120),
-('Whitney Williams', 306, 34, 68),
-('Sydney Payne', 266, 76, 228),
-('Rebecca Pennington', 258, 129, 215),
-('David George', 612, 102, 204),
-('Leonard Ayala', 60, 60, 100),
-('Robert King', 266, 114, 152),
-('Lindsey Hall', 40, 40, 100),
-('Daniel Marsh', 88, 66, 44),
-('Omar Howell', 192, 48, 72),
-('Kevin Roth', 34, 17, 85);
-
-SELECT * FROM analisis_tareas;
-
-
 -- 1. Tabla de rendimiento por empleado
-DROP TABLE IF EXISTS rendimiento_empleados;
-CREATE TABLE rendimiento_empleados (
+CREATE TABLE IF NOT EXISTS rendimiento_empleados (
     empleado_id INT PRIMARY KEY,
     tareas_completadas INT NOT NULL DEFAULT 0,
     tareas_tardias INT NOT NULL DEFAULT 0,
@@ -204,8 +170,7 @@ CREATE TABLE rendimiento_empleados (
 );
 
 -- 2. Tabla de calidad por empleado
-DROP TABLE IF EXISTS calidad_empleados;
-CREATE TABLE calidad_empleados (
+CREATE TABLE IF NOT EXISTS calidad_empleados (
     empleado_id INT PRIMARY KEY,
     calidad_promedio DECIMAL(5,2),
     iniciativa_promedio DECIMAL(5,2),
@@ -217,8 +182,7 @@ CREATE TABLE calidad_empleados (
 );
 
 -- 3. Tabla de cumplimiento de plazos
-DROP TABLE IF EXISTS cumplimiento_plazos;
-CREATE TABLE cumplimiento_plazos (
+CREATE TABLE IF NOT EXISTS cumplimiento_plazos (
     empleado_id INT PRIMARY KEY,
     a_tiempo INT DEFAULT 0,
     tarde INT DEFAULT 0,
@@ -229,8 +193,7 @@ CREATE TABLE cumplimiento_plazos (
 );
 
 -- 4. Tabla de carga de trabajo
-DROP TABLE IF EXISTS carga_trabajo;
-CREATE TABLE carga_trabajo (
+CREATE TABLE IF NOT EXISTS carga_trabajo (
     empleado_id INT PRIMARY KEY,
     total_tareas INT NOT NULL DEFAULT 0,
     tareas_pendientes INT DEFAULT 0,
@@ -243,11 +206,10 @@ CREATE TABLE carga_trabajo (
 );
 
 -- 5. Tabla de patrones temporales
-DROP TABLE IF EXISTS patron_temporal;
-CREATE TABLE patron_temporal (
+CREATE TABLE IF NOT EXISTS patron_temporal (
     id INT AUTO_INCREMENT PRIMARY KEY,
     empleado_id INT NOT NULL,
-    año INT,
+    ano INT,
     mes INT,
     dia_semana INT,
     cantidad_tareas INT DEFAULT 0,
@@ -255,12 +217,11 @@ CREATE TABLE patron_temporal (
     calidad_promedio DECIMAL(5,2),
     satisfaccion_promedio DECIMAL(5,2),
     fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    UNIQUE KEY unique_empleado_tiempo (empleado_id, año, mes, dia_semana)
+    UNIQUE KEY unique_empleado_tiempo (empleado_id, ano, mes, dia_semana)
 );
 
 -- 6. Tabla de análisis de retrasos
-DROP TABLE IF EXISTS analisis_retrasos;
-CREATE TABLE analisis_retrasos (
+CREATE TABLE IF NOT EXISTS analisis_retrasos (
     empleado_id INT PRIMARY KEY,
     total_tareas_con_retraso INT DEFAULT 0,
     dias_promedio_retraso DECIMAL(7,2),
@@ -271,8 +232,7 @@ CREATE TABLE analisis_retrasos (
 );
 
 -- 7. Tabla de distribución de estados
-DROP TABLE IF EXISTS distribucion_estados;
-CREATE TABLE distribucion_estados (
+CREATE TABLE IF NOT EXISTS distribucion_estados (
     empleado_id INT PRIMARY KEY,
     estado_asignado INT DEFAULT 0,
     estado_entregado INT DEFAULT 0,
@@ -281,8 +241,7 @@ CREATE TABLE distribucion_estados (
 );
 
 -- 8. Tabla de métricas de evaluación
-DROP TABLE IF EXISTS metricas_evaluacion;
-CREATE TABLE metricas_evaluacion (
+CREATE TABLE IF NOT EXISTS metricas_evaluacion (
     empleado_id INT PRIMARY KEY,
     tareas_evaluadas INT DEFAULT 0,
     calidad_promedio DECIMAL(5,2),
@@ -302,8 +261,7 @@ CREATE TABLE metricas_evaluacion (
 );
 
 -- 9. Tabla de resumen consolidado
-DROP TABLE IF EXISTS resumen_consolidado;
-CREATE TABLE resumen_consolidado (
+CREATE TABLE IF NOT EXISTS resumen_consolidado (
     empleado_id INT PRIMARY KEY,
     total_tareas INT NOT NULL DEFAULT 0,
     tareas_completadas INT DEFAULT 0,
@@ -322,8 +280,8 @@ CREATE TABLE resumen_consolidado (
 );
 
 -- 10. Tabla de ranking de empleados
-DROP TABLE IF EXISTS ranking_empleados;
-CREATE TABLE ranking_empleados (
+
+CREATE TABLE IF NOT EXISTS ranking_empleados (
     empleado_id INT PRIMARY KEY,
     score_total DECIMAL(7,2),
     calificacion DECIMAL(5,2),
@@ -334,8 +292,8 @@ CREATE TABLE ranking_empleados (
 );
 
 -- 11. Tabla de estadísticas generales
-DROP TABLE IF EXISTS estadisticas_generales;
-CREATE TABLE estadisticas_generales (
+
+CREATE TABLE IF NOT EXISTS estadisticas_generales (
     id INT PRIMARY KEY AUTO_INCREMENT,
     total_empleados INT,
     total_tareas_unicas INT,
@@ -344,3 +302,5 @@ CREATE TABLE estadisticas_generales (
     porcentaje_completado_global DECIMAL(5,2),
     fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
+
+SELECT * FROM estadisticas_generales

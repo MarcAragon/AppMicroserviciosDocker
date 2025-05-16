@@ -8,14 +8,9 @@ const mysql = require('mysql2/promise');
 
 // Configuración de la base de datos de resultados
 const resultadosConnection = mysql.createPool({
-    host: 'localhost',
-    port: 3306,
+    host: 'db',
     user: 'root',
-    password: '',
     database: 'resultados_analisis',
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0
 });
 
 // 1. EJECUTAR ANÁLISIS COMPLETO

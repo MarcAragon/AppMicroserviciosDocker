@@ -5,15 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="imgs/logo.png">
     <link rel="stylesheet" href="styleBoss.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <title>Boss</title>
 </head>
 <body>
     <nav class="navBarContainer">
-        <button id="btnProjects">Proyectos</button>
-        <button id="btnAddUser">Agregar Usuario</button>
-        <button id="btnConsultUsers">Consultar Usuarios</button>
-        <button id="btnLogOut">Cerrar sesión</button>
-        <button id="btnDashboard">Dashboard</button>
+        <div id="buttonContainer">
+            <button id="btnProjects">Proyectos</button>
+            <button id="btnAddUser">Agregar Usuario</button>
+            <button id="btnConsultUsers">Consultar Usuarios</button>
+            <button id="btnLogOut">Cerrar sesión</button>
+        </div>
         <p id="message"></p>
     </nav>
 
@@ -129,6 +131,389 @@
             </div>
         </div>
     </div>
+
+    <div class="container">
+        <h1>Panel de Control - Análisis de Tareas</h1>
+        
+        <div class="card">
+            <h2>Acciones</h2>
+            <button onclick="ejecutarAnalisis()">Ejecutar Análisis Completo</button>
+            <button onclick="cargarDashboard()">Actualizar Dashboard</button>
+            <button onclick="detectarProblemas()">Detectar Problemas</button>
+            <div id="mensaje" style="margin-top: 10px;"></div>
+        </div>
+
+        <div class="card">
+            <h2>Dashboard</h2>
+            <div id="dashboard-content">
+                <p class="loading">Cargando dashboard...</p>
+            </div>
+        </div>
+
+        <!-- Nueva card para el pie chart de estados -->
+        <div class="card">
+            <h2>Distribución de Estados de Tareas</h2>
+            <div class="chart-container">
+                <canvas id="task-chart-canvas"></canvas>
+                <canvas id="estadosChart"></canvas>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Top 5 Empleados</h2>
+            <div id="top-empleados">
+                <p class="loading">Cargando...</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Empleados con Problemas</h2>
+            <div id="empleados-problema">
+                <p class="loading">Cargando...</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Buscar Empleado</h2>
+            <input type="number" id="empleado-id" placeholder="ID del empleado">
+            <button onclick="buscarEmpleado()">Buscar</button>
+            <div id="empleado-info" style="margin-top: 10px;"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8003/analisis';
+
+        // Variable global para el gráfico
+        let estadosChart = null;
+
+        // Cargar dashboard al iniciar
+        window.onload = () => {
+            cargarDashboard();
+        };
+
+        async function ejecutarAnalisis() {
+            mostrarMensaje('Ejecutando análisis... esto puede tomar varios minutos', 'loading');
+            
+            try {
+                const response = await fetch(`${API_BASE}/ejecutar`, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    mostrarMensaje('Análisis completado exitosamente', 'success');
+                    setTimeout(cargarDashboard, 2000);
+                } else {
+                    mostrarMensaje(`Error: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                mostrarMensaje(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function cargarDashboard() {
+            try {
+                console.log('Cargando dashboard...');
+                const response = await fetch(`${API_BASE}/dashboard`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const text = await response.text();
+                console.log('Respuesta cruda:', text);
+                
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch (e) {
+                    console.error('Error al parsear JSON:', e);
+                    throw new Error('Respuesta del servidor no es JSON válido');
+                }
+                
+                console.log('Datos parseados:', data);
+                
+                if (data.success) {
+                    console.log('Mostrando dashboard con datos:', data.data);
+                    mostrarDashboard(data.data);
+                    mostrarTopEmpleados(data.data.topEmpleados || []);
+                    mostrarEmpleadosProblema(data.data.empleadosProblema || []);
+                    
+                    // Actualizar el pie chart con los datos de estados
+                    // Suponiendo que los datos vienen en data.data.estadosTareas
+                    if (data.data.estadosTareas) {
+                        actualizarChartEstados(data.data.estadosTareas);
+                    } else {
+                        // Si no hay datos de estados, usar datos de ejemplo
+                        // Puedes ajustar esto según tu estructura de datos real
+                        const estadosEjemplo = {
+                            completado: 450,
+                            en_progreso: 123,
+                            pendiente: 89,
+                            retrasado: 67
+                        };
+                        actualizarChartEstados(estadosEjemplo);
+                    }
+                } else {
+                    mostrarMensaje('Error al cargar dashboard: ' + (data.message || 'Error desconocido'), 'error');
+                }
+            } catch (error) {
+                console.error('Error completo:', error);
+                mostrarMensaje(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        function mostrarDashboard(data) {
+            const stats = data.estadisticas;
+            document.getElementById('dashboard-content').innerHTML = `
+                <div class="dashboard-grid">
+                    <div class="stat-box">
+                        <div class="stat-value">${stats.total_empleados}</div>
+                        <div class="stat-label">Empleados</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">${stats.total_tareas_unicas}</div>
+                        <div class="stat-label">Tareas Únicas</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">${stats.calificacion_promedio}/5.0</div>
+                        <div class="stat-label">Calificación Promedio</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">${stats.porcentaje_completado}%</div>
+                        <div class="stat-label">Completitud</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function actualizarChartEstados(estadosData) {
+            const ctx = document.getElementById('estadosChart').getContext('2d');
+            
+            // Preparar los datos para el gráfico
+            const labels = [];
+            const data = [];
+            const backgroundColor = [];
+            const borderColor = [];
+
+            // Colores para cada estado
+            const colores = {
+                completado: '#28a745',
+                en_progreso: '#ffc107',
+                pendiente: '#17a2b8',
+                retrasado: '#dc3545',
+                cancelado: '#6c757d'
+            };
+
+            // Procesar los datos
+            for (const [estado, cantidad] of Object.entries(estadosData)) {
+                labels.push(estado.charAt(0).toUpperCase() + estado.slice(1).replace('_', ' '));
+                data.push(cantidad);
+                backgroundColor.push(colores[estado] || '#007bff');
+                borderColor.push('#fff');
+            }
+
+            // Si ya existe un gráfico, destruirlo
+            if (estadosChart) {
+                estadosChart.destroy();
+            }
+
+            // Crear el nuevo gráfico
+            estadosChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Estados de Tareas',
+                        data: data,
+                        backgroundColor: backgroundColor,
+                        borderColor: borderColor,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                font: {
+                                    size: 14
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    label += context.raw;
+                                    
+                                    // Calcular el porcentaje
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const porcentaje = ((context.raw / total) * 100).toFixed(1);
+                                    label += ` (${porcentaje}%)`;
+                                    
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function mostrarTopEmpleados(empleados) {
+            let html = '<table><tr><th>Ranking</th><th>Empleado ID</th><th>Score</th><th>Calificación</th><th>% Completado</th></tr>';
+            
+            empleados.forEach(emp => {
+                const score = emp.score_total !== null && emp.score_total !== undefined 
+                    ? emp.score_total.toFixed(2) 
+                    : 'N/A';
+                const calificacion = emp.calificacion !== null && emp.calificacion !== undefined 
+                    ? emp.calificacion.toFixed(2) 
+                    : 'N/A';
+                
+                html += `<tr>
+                    <td>#${emp.ranking}</td>
+                    <td>${emp.empleado_id}</td>
+                    <td>${score}</td>
+                    <td>${calificacion}/5.0</td>
+                    <td>${emp.porcentaje_completado || 0}%</td>
+                </tr>`;
+            });
+            
+            html += '</table>';
+            document.getElementById('top-empleados').innerHTML = html;
+        }
+
+        function mostrarEmpleadosProblema(empleados) {
+            if (!empleados || empleados.length === 0) {
+                document.getElementById('empleados-problema').innerHTML = '<p>No se detectaron empleados con problemas</p>';
+                return;
+            }
+            
+            let html = '<table><tr><th>Empleado ID</th><th>Tareas Tardías</th><th>% Completadas</th><th>Calificación</th></tr>';
+            
+            empleados.forEach(emp => {
+                // Usar el nombre correcto del campo
+                const calificacion = emp.calificacion_general_promedio !== null && emp.calificacion_general_promedio !== undefined
+                    ? Number(emp.calificacion_general_promedio).toFixed(2)
+                    : 'N/A';
+                
+                html += `<tr>
+                    <td>${emp.empleado_id}</td>
+                    <td>${emp.tareas_tardias || 0}</td>
+                    <td>${emp.porcentaje_completadas || 0}%</td>
+                    <td>${calificacion}</td>
+                </tr>`;
+            });
+            
+            html += '</table>';
+            document.getElementById('empleados-problema').innerHTML = html;
+        }
+
+        async function buscarEmpleado() {
+            const empleadoId = document.getElementById('empleado-id').value;
+            if (!empleadoId) {
+                mostrarMensaje('Por favor ingresa un ID de empleado', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/empleado/${empleadoId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    mostrarInfoEmpleado(data.data);
+                } else {
+                    mostrarMensaje('Error al buscar empleado', 'error');
+                }
+            } catch (error) {
+                mostrarMensaje(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        function mostrarInfoEmpleado(data) {
+            const { rendimiento, calidad, ranking } = data;
+            
+            if (!rendimiento) {
+                document.getElementById('empleado-info').innerHTML = '<p>Empleado no encontrado</p>';
+                return;
+            }
+            
+            const html = `
+                <h3>Información del Empleado ${rendimiento.empleado_id}</h3>
+                <div class="dashboard-grid">
+                    <div class="stat-box">
+                        <div class="stat-value">${rendimiento.tareas_completadas || 0}</div>
+                        <div class="stat-label">Tareas Completadas</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">${formatNumber(rendimiento.porcentaje_completadas)}%</div>
+                        <div class="stat-label">% Completadas</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">${formatNumber(rendimiento.calificacion_promedio)}</div>
+                        <div class="stat-label">Calificación</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">#${ranking ? ranking.ranking : 'N/A'}</div>
+                        <div class="stat-label">Ranking</div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('empleado-info').innerHTML = html;
+        }
+
+        function formatNumber(num) {
+            if (num === null || num === undefined) return 'N/A';
+            return Number(num).toFixed(2);
+        }
+
+        async function detectarProblemas() {
+            try {
+                const response = await fetch(`${API_BASE}/problemas`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    mostrarProblemas(data.data);
+                } else {
+                    mostrarMensaje('Error al detectar problemas', 'error');
+                }
+            } catch (error) {
+                mostrarMensaje(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        function mostrarProblemas(data) {
+            let mensaje = 'Problemas detectados:\n';
+            mensaje += `- ${data.altasTasasRetraso.length} empleados con alta tasa de retraso\n`;
+            mensaje += `- ${data.bajasCalificaciones.length} empleados con baja calificación\n`;
+            mensaje += `- ${data.sobrecarga.length} empleados con sobrecarga de trabajo`;
+            
+            alert(mensaje);
+        }
+
+        function mostrarMensaje(mensaje, tipo) {
+            const div = document.getElementById('mensaje');
+            div.className = tipo;
+            div.textContent = mensaje;
+            
+            if (tipo !== 'loading') {
+                setTimeout(() => {
+                    div.textContent = '';
+                    div.className = '';
+                }, 5000);
+            }
+        }
+    </script>
 
     <script>
     
@@ -262,9 +647,6 @@
             clean(['closeI'], ['btnEmployees', 'btnBosses', 'closeJ', 'inputGetById', 'sendID', 'getByID']);
         });
         
-        document.getElementById('btnDashboard').addEventListener('click', () => {
-            window.location.href = 'dashboard.html'
-        })
 
         document.getElementById('closeJ').addEventListener('click', () => {
             document.getElementById('usersTableContainer').style.display = 'none';
@@ -279,7 +661,6 @@
             if (event.target.classList.contains('btnPut')) {
                 let id = event.target.getAttribute('data-user-id');
 
-                
 
                 try {
                     let user = await fetch(`http://localhost:8000/users/${id}`);
@@ -539,13 +920,57 @@ document.getElementById("btnProjects").addEventListener("click", () => {
             });
         });
     </script>
+    <script>
+        const allCanvases = document.querySelectorAll('canvas');
+        const mainContainer = document.querySelector('.container'); // Selecciona el contenedor principal
+        const overlays = [
+            'windowQsOverlay',
+            'usersTableOverLay',
+            'windowPutOverLay',
+            'addUserOverlay',
+            'projectsOverlay',
+            'searchProjectModal'
+        ];
 
-    <div id="task-chart-container" style="font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; display: flex; justify-content: center; align-items: center;  margin: 0; padding: 20px; background-color: #f8f9fa;">
-        <div id="task-chart-card" style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); width: 90%; max-width: 600px;">
-            <canvas id="task-chart-canvas" style="display: block; width: 100%; height: auto;"></canvas>
-        </div>
-    </div>
+        function toggleCanvases() {
+            const isAnyOverlayVisible = overlays.some(id => {
+                const el = document.getElementById(id);
+                return el && (el.style.display === 'flex' || el.style.display === 'block');
+            });
 
+            // Aplicar o quitar la clase blur a los canvases y al contenedor
+            allCanvases.forEach(canvas => {
+                canvas.classList.toggle('blur', isAnyOverlayVisible);
+            });
+            if (mainContainer) {
+                mainContainer.classList.toggle('blur', isAnyOverlayVisible);
+            }
+        }
+
+        // Añadir event listeners a los botones y overlays
+        overlays.forEach(overlayId => {
+            const overlay = document.getElementById(overlayId);
+            if (overlay) {
+                overlay.addEventListener('click', toggleCanvases);
+                // Observar cambios en el estilo display
+                new MutationObserver(toggleCanvases).observe(overlay, {
+                    attributes: true,
+                    attributeFilter: ['style']
+                });
+            }
+        });
+
+        // Botones que activan/desactivan overlays
+        document.getElementById('btnLogOut').addEventListener('click', toggleCanvases);
+        document.getElementById('btnConsultUsers').addEventListener('click', toggleCanvases);
+        document.getElementById('btnAddUser').addEventListener('click', toggleCanvases);
+        document.getElementById('btnProjects').addEventListener('click', toggleCanvases);
+        document.getElementById('btnSearchProject').addEventListener('click', toggleCanvases);
+        document.getElementById('closeSesionNo').addEventListener('click', toggleCanvases);
+        document.getElementById('closeSesionSi').addEventListener('click', toggleCanvases);
+        document.getElementById('closeI').addEventListener('click', toggleCanvases);
+        document.getElementById('closeJ').addEventListener('click', toggleCanvases);
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         const API_URL = 'http://localhost:8003/assignedT';
@@ -685,17 +1110,6 @@ document.getElementById("btnProjects").addEventListener("click", () => {
 
         document.addEventListener('DOMContentLoaded', loadTaskData);
     </script>
-
-
-    <div id="rating-card-container" style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px;">
-        <!-- Tarjeta con estilos específicos -->
-        <div id="rating-card" style="width: 220px; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); background: white;">
-            <!-- Label con estilos específicos -->
-            <div id="rating-label" style="font-size: 14px; color: #666; margin-bottom: 5px;">Calificación promedio</div>
-            <!-- Valor dinámico con estilos base -->
-            <div id="rating-value" style="font-size: 28px; font-weight: 600; color: #2b5876;">Cargando...</div>
-        </div>
-    </div>
 
     <script>
         // Función para formatear números con punto decimal

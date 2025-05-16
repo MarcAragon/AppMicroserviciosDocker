@@ -1,6 +1,6 @@
 services:
   db:
-    image: steven462/db:latest
+    image: steven462/db:v1
     ports: 
       - "3333:3306"
     healthcheck:
@@ -10,7 +10,7 @@ services:
       retries: 10
 
   proyectos:
-    image: marchimself/proyectosmicrsrv:latest
+    image: steven462/proyectos:v1
     depends_on:
       - db
       - usuarios
@@ -18,15 +18,15 @@ services:
       - "8001:8001"
 
   tareas:
-    image: marchimself/tareasasigmicrsrv:latest
+    image: steven462/tareas:v1
     depends_on:
       - db
       - proyectos
     ports:
-      - "8002:8002"
-
+      - "8002:8002" 
+      
   tareasasignadas:
-    image: marchimself/tareasasigmicrsrv:latest
+    image: steven462/tareasasignadas:v1
     depends_on:
       - db
       - usuarios
@@ -36,20 +36,13 @@ services:
 
 
   usuarios:
-    image: marchimself/usuariosmicrsrv:latest
+    image: steven462/users:v1
     depends_on:
       - db
     ports:
       - "8000:8000"
 
-  resultados:
-    image: steven462/resultados:latest
-    depends_on:
-      - db
-    ports:
-      - "8004:8004"
-
   web:
-    image: steven462/front:latest
+    image: steven462/front:v1
     ports:
       - "8080:80"

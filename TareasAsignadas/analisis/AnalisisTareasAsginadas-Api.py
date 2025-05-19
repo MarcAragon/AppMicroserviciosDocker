@@ -10,10 +10,8 @@ from mysql.connector import Error
 
 # Configuración de MySQL
 MYSQL_CONFIG = {
-    'host': 'localhost',
-    'port': 3306,
+    'host': 'db',
     'user': 'root',
-    'password': '',  # Tu contraseña
     'database': 'resultados_analisis'
 }
 

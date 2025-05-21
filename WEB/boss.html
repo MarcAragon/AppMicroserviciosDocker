@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,6 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <title>Boss</title>
 </head>
+
 <body>
     <nav class="navBarContainer">
         <div id="buttonContainer">
@@ -60,7 +62,7 @@
                 <input type="text" id="name" name="name" placeholder="Name">
                 <input type="text" id="department" name="department" placeholder="Department">
                 <input type="text" id="position" name="position" placeholder="Posición">
-        
+
                 <button type="submit">Confirmar cambios</button>
             </form>
         </div>
@@ -89,7 +91,7 @@
             <button id="btnGetProjects">Consultar Proyectos</button>
             <button id="btnCreateProject">Crear. Proyecto</button>
             <button id="btnSearchProject">Buscar Proyecto por ID</button>
-            
+
             <!-- Tabla de proyectos -->
             <div id="projectsTableContainer" style="display: none;">
                 <table id="projectsTable">
@@ -110,14 +112,14 @@
 
             <!-- Formulario para crear proyectos -->
             <div id="container2Crear" display="none">
-                    <form id="projectForm">
-                            <input type="text" id="projName" name="projName" placeholder="Nombre del Proyecto" required>
-                            <input type="text" id="projOwner" name="projOwner" placeholder="Responsable" >
-                            <input type="text" id="projidOwner" name="projidOwner" placeholder="ID responsable" >
-                            <input type="text" id="projStatus" name="projStatus" placeholder="Estado" >
-                            <input type="text" id="projTeam" name="projTeam" placeholder="Miembros del proyecto" >
-                            <button type="submit">Grabar Proyecto</button>
-                    </form>
+                <form id="projectForm">
+                    <input type="text" id="projName" name="projName" placeholder="Nombre del Proyecto" required>
+                    <input type="text" id="projOwner" name="projOwner" placeholder="Responsable">
+                    <input type="text" id="projidOwner" name="projidOwner" placeholder="ID responsable">
+                    <input type="text" id="projStatus" name="projStatus" placeholder="Estado">
+                    <input type="text" id="projTeam" name="projTeam" placeholder="Miembros del proyecto">
+                    <button type="submit">Grabar Proyecto</button>
+                </form>
             </div>
 
             <div id="searchProjectModal" style="display: none;">
@@ -134,7 +136,7 @@
 
     <div class="container">
         <h1>Panel de Control - Análisis de Tareas</h1>
-        
+
         <div class="card">
             <h2>Acciones</h2>
             <button onclick="ejecutarAnalisis()">Ejecutar Análisis Completo</button>
@@ -190,17 +192,18 @@
         // Cargar dashboard al iniciar
         window.onload = () => {
             cargarDashboard();
+            cargarDistribucionEstados()
         };
 
         async function ejecutarAnalisis() {
             mostrarMensaje('Ejecutando análisis... esto puede tomar varios minutos', 'loading');
-            
+
             try {
                 const response = await fetch(`${API_BASE}/ejecutar`, {
                     method: 'POST'
                 });
                 const data = await response.json();
-                
+
                 if (data.success) {
                     mostrarMensaje('Análisis completado exitosamente', 'success');
                     setTimeout(cargarDashboard, 2000);
@@ -216,14 +219,14 @@
             try {
                 console.log('Cargando dashboard...');
                 const response = await fetch(`${API_BASE}/dashboard`);
-                
+
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
-                
+
                 const text = await response.text();
                 console.log('Respuesta cruda:', text);
-                
+
                 let data;
                 try {
                     data = JSON.parse(text);
@@ -231,30 +234,16 @@
                     console.error('Error al parsear JSON:', e);
                     throw new Error('Respuesta del servidor no es JSON válido');
                 }
-                
+
                 console.log('Datos parseados:', data);
-                
+
                 if (data.success) {
                     console.log('Mostrando dashboard con datos:', data.data);
                     mostrarDashboard(data.data);
                     mostrarTopEmpleados(data.data.topEmpleados || []);
                     mostrarEmpleadosProblema(data.data.empleadosProblema || []);
-                    
-                    // Actualizar el pie chart con los datos de estados
-                    // Suponiendo que los datos vienen en data.data.estadosTareas
-                    if (data.data.estadosTareas) {
-                        actualizarChartEstados(data.data.estadosTareas);
-                    } else {
-                        // Si no hay datos de estados, usar datos de ejemplo
-                        // Puedes ajustar esto según tu estructura de datos real
-                        const estadosEjemplo = {
-                            completado: 450,
-                            en_progreso: 123,
-                            pendiente: 89,
-                            retrasado: 67
-                        };
-                        actualizarChartEstados(estadosEjemplo);
-                    }
+                    cargarDistribucionEstados();
+
                 } else {
                     mostrarMensaje('Error al cargar dashboard: ' + (data.message || 'Error desconocido'), 'error');
                 }
@@ -287,10 +276,44 @@
                 </div>
             `;
         }
+        async function cargarDistribucionEstados() {
+            try {
+                const response = await fetch(`${API_BASE}/distribucion-estados`);
 
-        function actualizarChartEstados(estadosData) {
+                if (!response.ok) {
+                    throw new Error(`Error HTTP: ${response.status}`);
+                }
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // Transformar los datos al formato requerido
+                    const estadosData = {
+                        'asignado': parseInt(result.data.total_asignadas),
+                        'entregado': parseInt(result.data.total_entregadas),
+                        'tardio': parseInt(result.data.total_tardias)
+                    };
+
+                    // Datos de porcentajes para usar en tooltips
+                    const porcentajes = {
+                        'asignado': result.data.porcentaje_asignadas,
+                        'entregado': result.data.porcentaje_entregadas,
+                        'tardio': result.data.porcentaje_tardias
+                    };
+
+                    // Actualizar el gráfico circular con los datos y porcentajes
+                    actualizarChartEstados(estadosData, porcentajes);
+                } else {
+                    console.error('Error en la respuesta:', result.message);
+                }
+            } catch (error) {
+                console.error('Error al cargar distribución de estados:', error);
+            }
+        }
+
+        function actualizarChartEstados(estadosData, porcentajes) {
             const ctx = document.getElementById('estadosChart').getContext('2d');
-            
+
             // Preparar los datos para el gráfico
             const labels = [];
             const data = [];
@@ -299,16 +322,15 @@
 
             // Colores para cada estado
             const colores = {
-                completado: '#28a745',
-                en_progreso: '#ffc107',
-                pendiente: '#17a2b8',
-                retrasado: '#dc3545',
-                cancelado: '#6c757d'
+                asignado: '#4D77CF', // Azul claro
+                entregado: '#28a745', // Verde
+                tardio: '#dc3545'     // Rojo
             };
 
             // Procesar los datos
             for (const [estado, cantidad] of Object.entries(estadosData)) {
-                labels.push(estado.charAt(0).toUpperCase() + estado.slice(1).replace('_', ' '));
+                // Convertir 'asignado' a 'Asignado', etc.
+                labels.push(estado.charAt(0).toUpperCase() + estado.slice(1));
                 data.push(cantidad);
                 backgroundColor.push(colores[estado] || '#007bff');
                 borderColor.push('#fff');
@@ -347,19 +369,16 @@
                         },
                         tooltip: {
                             callbacks: {
-                                label: function(context) {
-                                    let label = context.label || '';
-                                    if (label) {
-                                        label += ': ';
-                                    }
-                                    label += context.raw;
-                                    
-                                    // Calcular el porcentaje
-                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                    const porcentaje = ((context.raw / total) * 100).toFixed(1);
-                                    label += ` (${porcentaje}%)`;
-                                    
-                                    return label;
+                                label: function (context) {
+                                    // Obtener el nombre del estado en minúsculas para acceder a porcentajes
+                                    const estadoKey = context.label.toLowerCase();
+                                    // Obtener el valor numérico de tareas
+                                    const cantidad = context.raw;
+                                    // Obtener el porcentaje correspondiente
+                                    const porcentaje = porcentajes[estadoKey];
+
+                                    // Formato: "Estado: cantidad (porcentaje%)"
+                                    return `${context.label}: ${cantidad} (${porcentaje}%)`;
                                 }
                             }
                         }
@@ -370,15 +389,15 @@
 
         function mostrarTopEmpleados(empleados) {
             let html = '<table><tr><th>Ranking</th><th>Empleado ID</th><th>Score</th><th>Calificación</th><th>% Completado</th></tr>';
-            
+
             empleados.forEach(emp => {
-                const score = emp.score_total !== null && emp.score_total !== undefined 
-                    ? emp.score_total.toFixed(2) 
+                const score = emp.score_total !== null && emp.score_total !== undefined
+                    ? emp.score_total.toFixed(2)
                     : 'N/A';
-                const calificacion = emp.calificacion !== null && emp.calificacion !== undefined 
-                    ? emp.calificacion.toFixed(2) 
+                const calificacion = emp.calificacion !== null && emp.calificacion !== undefined
+                    ? emp.calificacion.toFixed(2)
                     : 'N/A';
-                
+
                 html += `<tr>
                     <td>#${emp.ranking}</td>
                     <td>${emp.empleado_id}</td>
@@ -387,7 +406,7 @@
                     <td>${emp.porcentaje_completado || 0}%</td>
                 </tr>`;
             });
-            
+
             html += '</table>';
             document.getElementById('top-empleados').innerHTML = html;
         }
@@ -397,15 +416,15 @@
                 document.getElementById('empleados-problema').innerHTML = '<p>No se detectaron empleados con problemas</p>';
                 return;
             }
-            
+
             let html = '<table><tr><th>Empleado ID</th><th>Tareas Tardías</th><th>% Completadas</th><th>Calificación</th></tr>';
-            
+
             empleados.forEach(emp => {
                 // Usar el nombre correcto del campo
                 const calificacion = emp.calificacion_general_promedio !== null && emp.calificacion_general_promedio !== undefined
                     ? Number(emp.calificacion_general_promedio).toFixed(2)
                     : 'N/A';
-                
+
                 html += `<tr>
                     <td>${emp.empleado_id}</td>
                     <td>${emp.tareas_tardias || 0}</td>
@@ -413,7 +432,7 @@
                     <td>${calificacion}</td>
                 </tr>`;
             });
-            
+
             html += '</table>';
             document.getElementById('empleados-problema').innerHTML = html;
         }
@@ -424,11 +443,11 @@
                 mostrarMensaje('Por favor ingresa un ID de empleado', 'error');
                 return;
             }
-            
+
             try {
                 const response = await fetch(`${API_BASE}/empleado/${empleadoId}`);
                 const data = await response.json();
-                
+
                 if (data.success) {
                     mostrarInfoEmpleado(data.data);
                 } else {
@@ -441,12 +460,12 @@
 
         function mostrarInfoEmpleado(data) {
             const { rendimiento, calidad, ranking } = data;
-            
+
             if (!rendimiento) {
                 document.getElementById('empleado-info').innerHTML = '<p>Empleado no encontrado</p>';
                 return;
             }
-            
+
             const html = `
                 <h3>Información del Empleado ${rendimiento.empleado_id}</h3>
                 <div class="dashboard-grid">
@@ -468,7 +487,7 @@
                     </div>
                 </div>
             `;
-            
+
             document.getElementById('empleado-info').innerHTML = html;
         }
 
@@ -481,7 +500,7 @@
             try {
                 const response = await fetch(`${API_BASE}/problemas`);
                 const data = await response.json();
-                
+
                 if (data.success) {
                     mostrarProblemas(data.data);
                 } else {
@@ -497,7 +516,7 @@
             mensaje += `- ${data.altasTasasRetraso.length} empleados con alta tasa de retraso\n`;
             mensaje += `- ${data.bajasCalificaciones.length} empleados con baja calificación\n`;
             mensaje += `- ${data.sobrecarga.length} empleados con sobrecarga de trabajo`;
-            
+
             alert(mensaje);
         }
 
@@ -505,7 +524,7 @@
             const div = document.getElementById('mensaje');
             div.className = tipo;
             div.textContent = mensaje;
-            
+
             if (tipo !== 'loading') {
                 setTimeout(() => {
                     div.textContent = '';
@@ -516,7 +535,7 @@
     </script>
 
     <script>
-    
+
         async function getUsersByRole(role) {
             try {
                 const response = await fetch(`http://localhost:8000/users/role/${role}`);
@@ -527,7 +546,7 @@
                 }
 
                 const tbody = document.querySelector('#usersTable tbody');
-                tbody.innerHTML = ''; 
+                tbody.innerHTML = '';
 
                 data.data.forEach(user => {
                     const row = document.createElement('tr');
@@ -620,7 +639,7 @@
         });
 
         document.getElementById('btnConsultUsers').addEventListener('click', () => {
-            clean(['usersTableOverLay','usersTableContainer', 'closeJ', 'btnEmployees', 'btnBosses', 'getByID'], ['closeI', 'usersTable', 'inputGetById', 'sendID']);
+            clean(['usersTableOverLay', 'usersTableContainer', 'closeJ', 'btnEmployees', 'btnBosses', 'getByID'], ['closeI', 'usersTable', 'inputGetById', 'sendID']);
         });
 
         document.getElementById('getByID').addEventListener('click', () => {
@@ -642,11 +661,11 @@
             clean(['closeI'], ['btnEmployees', 'btnBosses', 'closeJ', 'inputGetById', 'sendID', 'getByID']);
         });
 
-        document.getElementById('btnEmployees').addEventListener('click', () => { 
+        document.getElementById('btnEmployees').addEventListener('click', () => {
             getUsersByRole('employee');
             clean(['closeI'], ['btnEmployees', 'btnBosses', 'closeJ', 'inputGetById', 'sendID', 'getByID']);
         });
-        
+
 
         document.getElementById('closeJ').addEventListener('click', () => {
             document.getElementById('usersTableContainer').style.display = 'none';
@@ -706,11 +725,11 @@
                     body: JSON.stringify(updatedUser)
                 });
 
-            let result = await response.json();
-            if (!result.ok) throw new Error(result.error || "Error al actualizar el usuario.");
+                let result = await response.json();
+                if (!result.ok) throw new Error(result.error || "Error al actualizar el usuario.");
 
                 alert("Usuario actualizado correctamente.");
-                
+
                 // Ocultar modal solo si la actualización fue exitosa
                 document.getElementById('windowPutOverLay').style.display = 'none';
 
@@ -732,54 +751,54 @@
             document.getElementById("addUserOverlay").style.display = "flex";
         });
 
-        
+
         document.getElementById("btnAddUser").addEventListener("click", () => {
             document.getElementById("addProjectOverlay").style.display = "flex";
         });
 
-document.getElementById("addUserOverlay").addEventListener("click", (event) => {
-    if (event.target.id === "addUserOverlay") {
-        document.getElementById("addUserOverlay").style.display = "none";
-    }
-});
-
-document.getElementById("addUserForm").addEventListener("submit", async (event) => {
-    event.preventDefault();
-
-    const newUser = {
-        name: document.getElementById("newName").value.trim(),
-        department: document.getElementById("newDepartment").value.trim(),
-        position: document.getElementById("newPosition").value.trim(),
-        role: document.getElementById("newRole").value.trim().toLowerCase(),
-        contract_date: document.getElementById("newContractDate").value,
-        user: document.getElementById("newUser").value.trim()
-    };
-
-    // Validación del rol
-    if (newUser.role !== "boss" && newUser.role !== "employee") {
-        alert("Error: El rol debe ser 'boss' o 'employee'.");
-        return;
-    }
-
-    try {
-        let response = await fetch("http://localhost:8000/user", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(newUser)
+        document.getElementById("addUserOverlay").addEventListener("click", (event) => {
+            if (event.target.id === "addUserOverlay") {
+                document.getElementById("addUserOverlay").style.display = "none";
+            }
         });
 
-        let result = await response.json();
-        if (!result.ok) throw new Error(result.error || "Error al agregar usuario.");
+        document.getElementById("addUserForm").addEventListener("submit", async (event) => {
+            event.preventDefault();
 
-        alert("✅ Usuario agregado correctamente.");
-        
-        // Ocultar modal y limpiar formulario
-        document.getElementById("addUserOverlay").style.display = "none";
-        document.getElementById("addUserForm").reset();
-    } catch (error) {
-            alert(`❌ Error: ${error.message}`);
-        }
-    });
+            const newUser = {
+                name: document.getElementById("newName").value.trim(),
+                department: document.getElementById("newDepartment").value.trim(),
+                position: document.getElementById("newPosition").value.trim(),
+                role: document.getElementById("newRole").value.trim().toLowerCase(),
+                contract_date: document.getElementById("newContractDate").value,
+                user: document.getElementById("newUser").value.trim()
+            };
+
+            // Validación del rol
+            if (newUser.role !== "boss" && newUser.role !== "employee") {
+                alert("Error: El rol debe ser 'boss' o 'employee'.");
+                return;
+            }
+
+            try {
+                let response = await fetch("http://localhost:8000/user", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(newUser)
+                });
+
+                let result = await response.json();
+                if (!result.ok) throw new Error(result.error || "Error al agregar usuario.");
+
+                alert("✅ Usuario agregado correctamente.");
+
+                // Ocultar modal y limpiar formulario
+                document.getElementById("addUserOverlay").style.display = "none";
+                document.getElementById("addUserForm").reset();
+            } catch (error) {
+                alert(`❌ Error: ${error.message}`);
+            }
+        });
 
 
         window.addEventListener('load', () => {
@@ -800,21 +819,21 @@ document.getElementById("addUserForm").addEventListener("submit", async (event) 
             }
         });
 
-// Función auxiliar para mostrar u ocultar elementos
-function toggleVisibility(id, show) {
-    document.getElementById(id).classList.toggle("hidden", !show);
-}
+        // Función auxiliar para mostrar u ocultar elementos
+        function toggleVisibility(id, show) {
+            document.getElementById(id).classList.toggle("hidden", !show);
+        }
 
-document.getElementById("btnProjects").addEventListener("click", () => {
-    const element = document.getElementById("projectsOverlay");
-    if (element.style.display === "flex") {
-        element.style.display = "none";
-    } else {
-        element.style.display = "flex"
-    }
-});
+        document.getElementById("btnProjects").addEventListener("click", () => {
+            const element = document.getElementById("projectsOverlay");
+            if (element.style.display === "flex") {
+                element.style.display = "none";
+            } else {
+                element.style.display = "flex"
+            }
+        });
 
-// Cerrar el overlay de proyectos
+        // Cerrar el overlay de proyectos
 
         document.getElementById("projectsOverlay").addEventListener("click", (e) => {
             if (e.target.id === "projectsOverlay") {
@@ -851,24 +870,24 @@ document.getElementById("btnProjects").addEventListener("click", () => {
                 const element = document.getElementById("projectsTableContainer");
                 if (element.style.display === "flex") {
                     element.style.display = "none";
-                } else { element.style.display = "flex";}
+                } else { element.style.display = "flex"; }
             } catch (error) {
                 alert(error.message);
             }
         });
 
 
-            document.getElementById("projectForm").addEventListener("submit", async (e) => {
-                e.preventDefault();
-                        
-                const newProject = {
-                    project_name: document.getElementById("projName").value.trim(),
-                    boss_name: document.getElementById("projOwner").value.trim(),
-                    boss_id: document.getElementById("projidOwner").value.trim(),
-                    status: document.getElementById("projStatus").value.trim(),
-                    team_members: document.getElementById("projTeam").value.trim().split(",").map(item => item.trim())
-                            
-                };
+        document.getElementById("projectForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const newProject = {
+                project_name: document.getElementById("projName").value.trim(),
+                boss_name: document.getElementById("projOwner").value.trim(),
+                boss_id: document.getElementById("projidOwner").value.trim(),
+                status: document.getElementById("projStatus").value.trim(),
+                team_members: document.getElementById("projTeam").value.trim().split(",").map(item => item.trim())
+
+            };
 
             try {
                 console.log(JSON.stringify(newProject));
@@ -886,27 +905,27 @@ document.getElementById("btnProjects").addEventListener("click", () => {
                 alert(`Error: ${error.message}`);
             }
         });
-        
-    document.getElementById("btnCreateProject")?.addEventListener("click", () => {
-        const form = document.getElementById("container2Crear");
-        if (form.style.display === "flex") {
-            form.style.display = "none"
-        } else {
-            form.style.display = "flex"
-        }
 
-    });
-    
-    document.addEventListener("DOMContentLoaded", function() {
+        document.getElementById("btnCreateProject")?.addEventListener("click", () => {
+            const form = document.getElementById("container2Crear");
+            if (form.style.display === "flex") {
+                form.style.display = "none"
+            } else {
+                form.style.display = "flex"
+            }
+
+        });
+
+        document.addEventListener("DOMContentLoaded", function () {
             document.getElementById("btnSearchProject").addEventListener("click", () => {
                 const element = document.getElementById("searchProjectModal");
-            if (element.style.display === "block") {
-                element.style.display = "none"
-            } else {
-                element.style.display = "block"
-            }
+                if (element.style.display === "block") {
+                    element.style.display = "none"
+                } else {
+                    element.style.display = "block"
+                }
             });
-            
+
             document.getElementById("searchForm").addEventListener("submit", async (event) => {
                 event.preventDefault();
                 const id = document.getElementById("searchProjectId").value;
@@ -980,13 +999,13 @@ document.getElementById("btnProjects").addEventListener("click", () => {
         function setupCanvas(canvas) {
             const dpr = window.devicePixelRatio || 1;
             const rect = canvas.getBoundingClientRect();
-            
+
             canvas.width = rect.width * dpr;
             canvas.height = rect.height * dpr;
-            
+
             const ctx = canvas.getContext('2d');
             ctx.scale(dpr, dpr);
-            
+
             return ctx;
         }
 
@@ -1002,17 +1021,17 @@ document.getElementById("btnProjects").addEventListener("click", () => {
             try {
                 const response = await fetch(API_URL);
                 const data = await response.json();
-        
+
                 let Asignado = 0, Entregado = 0, Tardio = 0;
-        
+
                 data.forEach(entrada => {
                     if (entrada.estado === 'Asignado') Asignado++;
                     if (entrada.estado === 'Entregado') Entregado++;
                     if (entrada.estado === 'Tardio') Tardio++;
                 });
-                
+
                 renderTaskChart(Asignado, Entregado, Tardio);
-                
+
             } catch (error) {
                 console.error('Error al obtener datos:', error);
                 renderTaskChart(0, 0, 0);
@@ -1022,7 +1041,7 @@ document.getElementById("btnProjects").addEventListener("click", () => {
         function renderTaskChart(asignado, entregado, tardio) {
             const canvas = document.getElementById('task-chart-canvas');
             const ctx = setupCanvas(canvas);
-            
+
             if (taskChart) {
                 taskChart.destroy();
             }
@@ -1100,7 +1119,7 @@ document.getElementById("btnProjects").addEventListener("click", () => {
         }
 
         // Manejar redimensionamiento
-        window.addEventListener('resize', function() {
+        window.addEventListener('resize', function () {
             if (taskChart) {
                 const canvas = document.getElementById('task-chart-canvas');
                 setupCanvas(canvas);
@@ -1124,10 +1143,10 @@ document.getElementById("btnProjects").addEventListener("click", () => {
 
         // URL del endpoint (reemplazar con la real)
         const API_URL2 = 'http://localhost:8003/assignedT';
-        
+
         // Elementos del DOM
         const valorElement = document.getElementById('rating-value');
-        
+
         // Estados de visualización
         const styles = {
             loading: 'font-size: 28px; font-weight: 600; color: #999; font-style: italic;',
@@ -1145,13 +1164,13 @@ document.getElementById("btnProjects").addEventListener("click", () => {
             try {
                 setStyle(valorElement, styles.loading);
                 valorElement.textContent = 'Cargando...';
-                
+
                 const response = await fetch(API_URL2);
-                
+
                 if (!response.ok) {
                     throw new Error(`Error HTTP: ${response.status}`);
                 }
-                
+
                 const data = await response.json();
                 let sum = 0;
 
@@ -1159,22 +1178,23 @@ document.getElementById("btnProjects").addEventListener("click", () => {
                     sum += entrada.calificacion_promedio;
                 }
 
-                const valor = data.length > 0 ? sum/data.length : 0;
+                const valor = data.length > 0 ? sum / data.length : 0;
                 const valorFormateado = formatearNumero(valor);
-                
+
                 setStyle(valorElement, styles.normal);
                 valorElement.textContent = valorFormateado;
-                
+
             } catch (error) {
                 console.error('Error al obtener datos:', error);
                 setStyle(valorElement, styles.error);
                 valorElement.textContent = 'Error al cargar';
             }
         }
-        
+
         // Cargar datos cuando el DOM esté listo
         document.addEventListener('DOMContentLoaded', fetchData);
     </script>
 
-</head>
+    </head>
+
 </html>

@@ -8,6 +8,9 @@ services:
       interval: 10s
       timeout: 10s
       retries: 10
+    deploy:
+      replicas: 1
+
 
   proyectos:
     image: steven462/proyectos:v1
@@ -16,6 +19,9 @@ services:
       - usuarios
     ports:
       - "8001:8001"
+    deploy:
+      replicas: 5
+
 
   tareas:
     image: steven462/tareas:v1
@@ -23,7 +29,11 @@ services:
       - db
       - proyectos
     ports:
-      - "8002:8002" 
+      - "8002:8002"
+    deploy:
+      replicas: 5
+
+
       
   tareasasignadas:
     image: steven462/tareasasignadas:v1
@@ -33,6 +43,9 @@ services:
       - proyectos
     ports:
       - "8003:8003"
+    deploy:
+      replicas: 5
+
 
 
   usuarios:
@@ -41,8 +54,13 @@ services:
       - db
     ports:
       - "8000:8000"
+    deploy:
+      replicas: 5
+
 
   web:
     image: steven462/front:v1
     ports:
       - "8080:80"
+    deploy:
+      replicas: 2

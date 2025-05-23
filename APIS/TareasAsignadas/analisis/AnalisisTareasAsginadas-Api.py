@@ -65,7 +65,7 @@ spark = SparkSession.builder.appName('AnalisisTareasAsignadas').getOrCreate()
 sc = spark.sparkContext
 
 # LEER DATOS DESDE API
-API_URL = "http://localhost:8003/assignedT"
+API_URL = "http://appdocker.koreasouth.cloudapp.azure.com:8003/assignedT"
 
 try:
     # Hacer petición GET a la API

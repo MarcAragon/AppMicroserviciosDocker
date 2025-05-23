@@ -142,7 +142,114 @@
             <button onclick="ejecutarAnalisis()">Ejecutar Análisis Completo</button>
             <button onclick="cargarDashboard()">Actualizar Dashboard</button>
             <button onclick="detectarProblemas()">Detectar Problemas</button>
+            <button id="openModalBtn">Actualizar Tarea</button>
             <div id="mensaje" style="margin-top: 10px;"></div>
+        </div>
+
+        <div id="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Actualizar Tarea</h2>
+                
+                <div class="modal-body">
+                    <!-- Formulario para ingresar el ID -->
+                    <div id="idInputForm">
+                        <div class="form-group">
+                            <label for="taskId">ID de la Tarea:</label>
+                            <input type="text" id="taskId" placeholder="Ingrese el ID de la tarea">
+                            <button id="fetchTaskBtn">Buscar Tarea</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Formulario para editar la tarea (inicialmente oculto) -->
+                    <form id="taskForm" style="display: none;">
+                        <input type="hidden" id="id" name="id">
+                        
+                        <div class="form-section">
+                            <h3>Información Básica</h3>
+                            <div class="form-group">
+                                <label for="empleado_id">ID del Empleado:</label>
+                                <input type="text" id="empleado_id" name="empleado_id">
+                                <span class="current-value" id="current_empleado_id"></span>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="task_id">ID de la Tarea:</label>
+                                <input type="text" id="task_id" name="task_id">
+                                <span class="current-value" id="current_task_id"></span>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="estado">Estado:</label>
+                                <select id="estado" name="estado">
+                                    <option value="Asignado">Asignado</option>
+                                    <option value="Entregado">Entregado</option>
+                                    <option value="Tardio">Tardio</option>
+                                </select>
+                                <span class="current-value" id="current_estado"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-section">
+                            <h3>Fechas</h3>
+                            <div class="form-group">
+                                <label for="fecha_asignacion">Fecha de Asignación:</label>
+                                <input type="text" id="fecha_asignacion" name="fecha_asignacion" placeholder="YYYY-MM-DD">
+                                <span class="current-value" id="current_fecha_asignacion"></span>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="fecha_entrega_maxima">Fecha de Entrega Máxima:</label>
+                                <input type="text" id="fecha_entrega_maxima" name="fecha_entrega_maxima" placeholder="YYYY-MM-DD">
+                                <span class="current-value" id="current_fecha_entrega_maxima"></span>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="fecha_entrega">Fecha de Entrega:</label>
+                                <input type="text" id="fecha_entrega" name="fecha_entrega" placeholder="YYYY-MM-DD">
+                                <span class="current-value" id="current_fecha_entrega"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-section">
+                            <h3>Evaluación</h3>
+                            <div class="form-group">
+                                <label for="calidad">Calidad:</label>
+                                <input type="text" id="calidad" name="calidad">
+                                <span class="current-value" id="current_calidad"></span>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="iniciativa">Iniciativa:</label>
+                                <input type="text" id="iniciativa" name="iniciativa">
+                                <span class="current-value" id="current_iniciativa"></span>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="comunicacion">Comunicación:</label>
+                                <input type="text" id="comunicacion" name="comunicacion">
+                                <span class="current-value" id="current_comunicacion"></span>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="satisfaccion_cliente">Satisfacción del Cliente:</label>
+                                <input type="text" id="satisfaccion_cliente" name="satisfaccion_cliente">
+                                <span class="current-value" id="current_satisfaccion_cliente"></span>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="calificacion_promedio">Calificación Promedio:</label>
+                                <input type="text" id="calificacion_promedio" name="calificacion_promedio">
+                                <span class="current-value" id="current_calificacion_promedio"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="buttons-container">
+                            <button type="button" id="updateTaskBtn">Actualizar Tarea</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
 
         <div class="card">
@@ -184,7 +291,127 @@
     </div>
 
     <script>
-        const API_BASE = 'http://appdocker.centralindia.cloudapp.azure.com:8003/analisis';
+
+        // Obtener elementos del DOM
+    const modal = document.getElementById("modal");
+    const openModalBtn = document.getElementById("openModalBtn");
+    const closeBtn = document.querySelector(".close");
+    const fetchTaskBtn = document.getElementById("fetchTaskBtn");
+    const updateTaskBtn = document.getElementById("updateTaskBtn");
+    const taskIdInput = document.getElementById("taskId");
+    const taskForm = document.getElementById("taskForm");
+    const idInputForm = document.getElementById("idInputForm");
+
+    // Abrir modal al hacer clic en el botón
+    openModalBtn.addEventListener("click", function() {
+        modal.style.display = "block";
+        // Resetear formularios
+        taskIdInput.value = "";
+        taskForm.style.display = "none";
+        idInputForm.style.display = "block";
+    });
+
+    // Cerrar modal al hacer clic en la X
+    closeBtn.addEventListener("click", function() {
+        modal.style.display = "none";
+    });
+
+    // Cerrar modal al hacer clic fuera del contenido
+    window.addEventListener("click", function(event) {
+        if (event.target === modal) {
+            modal.style.display = "none";
+        }
+    });
+
+    // Buscar tarea al hacer clic en el botón
+    fetchTaskBtn.addEventListener("click", function() {
+        const taskId = taskIdInput.value.trim();
+        
+        if (!taskId) {
+            alert("Por favor ingrese un ID de tarea válido");
+            return;
+        }
+        
+        fetch(`http://appdocker.koreasouth.cloudapp.azure.com:8003/assignedT/${taskId}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Error ${response.status}: ${response.statusText}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Llenar el formulario con los datos obtenidos
+                document.getElementById("id").value = data.id;
+                
+                // Información Básica
+                setFieldValue("empleado_id", data.empleado_id);
+                setFieldValue("task_id", data.task_id);
+                setFieldValue("estado", data.estado);
+                
+                // Fechas
+                setFieldValue("fecha_asignacion", data.fecha_asignacion);
+                setFieldValue("fecha_entrega_maxima", data.fecha_entrega_maxima);
+                setFieldValue("fecha_entrega", data.fecha_entrega);
+                
+                // Evaluación
+                setFieldValue("calidad", data.calidad);
+                setFieldValue("iniciativa", data.iniciativa);
+                setFieldValue("comunicacion", data.comunicacion);
+                setFieldValue("satisfaccion_cliente", data.satisfaccion_cliente);
+                setFieldValue("calificacion_promedio", data.calificacion_promedio);
+                
+                // Mostrar el formulario y ocultar el input de ID
+                taskForm.style.display = "block";
+                idInputForm.style.display = "none";
+            })
+            .catch(error => {
+                console.error("Error al obtener la tarea:", error);
+                alert(`Error al obtener la tarea: ${error.message}`);
+            });
+    });
+
+    // Función para establecer valores en campos y mostrar valores actuales
+    function setFieldValue(fieldId, value) {
+        const input = document.getElementById(fieldId);
+        const currentValueSpan = document.getElementById(`current_${fieldId}`);
+        
+        input.value = value || '';
+        currentValueSpan.textContent = `Actual: ${value || 'N/A'}`;
+    }
+
+    // Actualizar tarea al hacer clic en el botón
+    updateTaskBtn.addEventListener("click", function() {
+        const taskId = document.getElementById("id").value;
+        const formData = {
+            Estado: document.getElementById("estado").value
+        };
+
+        console.log(formData)
+        
+        fetch(`http://appdocker.koreasouth.cloudapp.azure.com:8003/assignedT/${taskId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Error ${response.status}: ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            alert("Tarea actualizada con éxito!");
+            modal.style.display = "none";
+        })
+        .catch(error => {
+            console.error("Error al actualizar la tarea:", error);
+            alert(`Error al actualizar la tarea: ${error.message}`);
+        });
+    });
+
+        const API_BASE = 'http://appdocker.koreasouth.cloudapp.azure.com:8003/analisis';
 
         // Variable global para el gráfico
         let estadosChart = null;
@@ -538,7 +765,7 @@
 
         async function getUsersByRole(role) {
             try {
-                const response = await fetch(`http://appdocker.centralindia.cloudapp.azure.com:8000/users/role/${role}`);
+                const response = await fetch(`http://appdocker.koreasouth.cloudapp.azure.com:8000/users/role/${role}`);
                 const data = await response.json();
 
                 if (!data.Ok) {
@@ -570,7 +797,7 @@
 
         async function getUserByID(id) {
             try {
-                let user = await fetch(`http://appdocker.centralindia.cloudapp.azure.com:8000/users/${id}`);
+                let user = await fetch(`http://appdocker.koreasouth.cloudapp.azure.com:8000/users/${id}`);
                 user = await user.json();
 
                 if (!user || !user.id) {
@@ -682,7 +909,7 @@
 
 
                 try {
-                    let user = await fetch(`http://appdocker.centralindia.cloudapp.azure.com:8000/users/${id}`);
+                    let user = await fetch(`http://appdocker.koreasouth.cloudapp.azure.com:8000/users/${id}`);
                     user = await user.json();
 
                     if (!user.id) throw new Error("Usuario no encontrado.");
@@ -719,7 +946,7 @@
             };
 
             try {
-                let response = await fetch(`http://appdocker.centralindia.cloudapp.azure.com:8000/users/${id}`, {
+                let response = await fetch(`http://appdocker.koreasouth.cloudapp.azure.com:8000/users/${id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(updatedUser)
@@ -781,7 +1008,7 @@
             }
 
             try {
-                let response = await fetch("http://appdocker.centralindia.cloudapp.azure.com:8000/user", {
+                let response = await fetch("http://appdocker.koreasouth.cloudapp.azure.com:8000/user", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(newUser)
@@ -844,7 +1071,7 @@
 
         document.getElementById("btnGetProjects").addEventListener("click", async () => {
             try {
-                const res = await fetch("http://appdocker.centralindia.cloudapp.azure.com:8001/projects");
+                const res = await fetch("http://appdocker.koreasouth.cloudapp.azure.com:8001/projects");
                 if (!res.ok) throw new Error("Error al obtener proyectos.");
                 const data = await res.json();
 
@@ -891,7 +1118,7 @@
 
             try {
                 console.log(JSON.stringify(newProject));
-                const res = await fetch("http://appdocker.centralindia.cloudapp.azure.com:8001/projects", {
+                const res = await fetch("http://appdocker.koreasouth.cloudapp.azure.com:8001/projects", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(newProject)
@@ -930,7 +1157,7 @@
                 event.preventDefault();
                 const id = document.getElementById("searchProjectId").value;
                 try {
-                    const response = await fetch(`http://appdocker.centralindia.cloudapp.azure.com:8001/projects/${id}`);
+                    const response = await fetch(`http://appdocker.koreasouth.cloudapp.azure.com:8001/projects/${id}`);
                     const result = await response.json();
                     document.getElementById("searchResult").textContent = JSON.stringify(result, null, 2);
                 } catch (error) {
@@ -992,7 +1219,7 @@
     </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        const API_URL = 'http://appdocker.centralindia.cloudapp.azure.com:8003/assignedT';
+        const API_URL = 'http://appdocker.koreasouth.cloudapp.azure.com:8003/assignedT';
         let taskChart;
 
         // Configuración para alta resolución
@@ -1142,7 +1369,7 @@
         }
 
         // URL del endpoint (reemplazar con la real)
-        const API_URL2 = 'http://appdocker.centralindia.cloudapp.azure.com:8003/assignedT';
+        const API_URL2 = 'http://appdocker.koreasouth.cloudapp.azure.com:8003/assignedT';
 
         // Elementos del DOM
         const valorElement = document.getElementById('rating-value');

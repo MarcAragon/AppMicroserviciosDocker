@@ -184,7 +184,7 @@
     </div>
 
     <script>
-        const API_BASE = 'http://localhost:8003/analisis';
+        const API_BASE = 'http://appdocker.centralindia.cloudapp.azure.com:8003/analisis';
 
         // Variable global para el gráfico
         let estadosChart = null;
@@ -538,7 +538,7 @@
 
         async function getUsersByRole(role) {
             try {
-                const response = await fetch(`http://localhost:8000/users/role/${role}`);
+                const response = await fetch(`http://appdocker.centralindia.cloudapp.azure.com:8000/users/role/${role}`);
                 const data = await response.json();
 
                 if (!data.Ok) {
@@ -570,7 +570,7 @@
 
         async function getUserByID(id) {
             try {
-                let user = await fetch(`http://localhost:8000/users/${id}`);
+                let user = await fetch(`http://appdocker.centralindia.cloudapp.azure.com:8000/users/${id}`);
                 user = await user.json();
 
                 if (!user || !user.id) {
@@ -682,7 +682,7 @@
 
 
                 try {
-                    let user = await fetch(`http://localhost:8000/users/${id}`);
+                    let user = await fetch(`http://appdocker.centralindia.cloudapp.azure.com:8000/users/${id}`);
                     user = await user.json();
 
                     if (!user.id) throw new Error("Usuario no encontrado.");
@@ -719,7 +719,7 @@
             };
 
             try {
-                let response = await fetch(`http://localhost:8000/users/${id}`, {
+                let response = await fetch(`http://appdocker.centralindia.cloudapp.azure.com:8000/users/${id}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(updatedUser)
@@ -781,7 +781,7 @@
             }
 
             try {
-                let response = await fetch("http://localhost:8000/user", {
+                let response = await fetch("http://appdocker.centralindia.cloudapp.azure.com:8000/user", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(newUser)
@@ -844,7 +844,7 @@
 
         document.getElementById("btnGetProjects").addEventListener("click", async () => {
             try {
-                const res = await fetch("http://localhost:8001/projects");
+                const res = await fetch("http://appdocker.centralindia.cloudapp.azure.com:8001/projects");
                 if (!res.ok) throw new Error("Error al obtener proyectos.");
                 const data = await res.json();
 
@@ -891,7 +891,7 @@
 
             try {
                 console.log(JSON.stringify(newProject));
-                const res = await fetch("http://localhost:8001/projects", {
+                const res = await fetch("http://appdocker.centralindia.cloudapp.azure.com:8001/projects", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(newProject)
@@ -930,7 +930,7 @@
                 event.preventDefault();
                 const id = document.getElementById("searchProjectId").value;
                 try {
-                    const response = await fetch(`http://localhost:8001/projects/${id}`);
+                    const response = await fetch(`http://appdocker.centralindia.cloudapp.azure.com:8001/projects/${id}`);
                     const result = await response.json();
                     document.getElementById("searchResult").textContent = JSON.stringify(result, null, 2);
                 } catch (error) {
@@ -992,7 +992,7 @@
     </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        const API_URL = 'http://localhost:8003/assignedT';
+        const API_URL = 'http://appdocker.centralindia.cloudapp.azure.com:8003/assignedT';
         let taskChart;
 
         // Configuración para alta resolución
@@ -1142,7 +1142,7 @@
         }
 
         // URL del endpoint (reemplazar con la real)
-        const API_URL2 = 'http://localhost:8003/assignedT';
+        const API_URL2 = 'http://appdocker.centralindia.cloudapp.azure.com:8003/assignedT';
 
         // Elementos del DOM
         const valorElement = document.getElementById('rating-value');

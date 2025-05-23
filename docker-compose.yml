@@ -50,3 +50,7 @@ services:
     image: steven462/front:v1
     ports:
       - "8080:80"
+
+networks:
+  default:
+    driver: overlay
